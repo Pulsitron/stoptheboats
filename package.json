@@ -7,17 +7,22 @@
   },
   "scripts": {
     "install:ci": "npm ci",
+    "predev": "npm run db:migrate:local",
     "dev": "vite",
     "build": "vinext build",
+    "prestart": "npm run db:migrate:local",
     "start": "vite preview",
-    "test": "npm run test:unit && npm run test:game",
-    "test:unit": "node --test tests/game-regressions.test.mjs tests/leaderboard-api.test.mjs",
+    "test": "npm run test:unit && npm run test:game && npm run test:mobile && npm run test:leaderboard-db",
+    "test:unit": "node --test tests/game-regressions.test.mjs tests/leaderboard-api.test.mjs tests/leaderboard-client.test.mjs",
     "test:game": "node tests/game-smoke.mjs --strict",
+    "test:mobile": "node --test tests/mobile-regressions.test.mjs",
+    "test:leaderboard-db": "node tests/leaderboard-d1.integration.mjs",
+    "check:leaderboard": "node scripts/check-leaderboard.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "npm run build && npm run db:migrate:remote && wrangler deploy"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

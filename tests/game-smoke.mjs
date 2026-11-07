@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Offline smoke/regression harness for the single-file coastal-defence game.
- * Usage: node tests/game-smoke.mjs [game.html] [--strict]
+ * Usage: node tests/game-smoke.mjs [game.html] [--strict] [--mobile-only]
  * Defaults to ../public/game.html relative to this test, independent of cwd.
  * Executes a test-only instrumented copy; never edits the input HTML.
  * DOM, canvas, audio, storage, timers and fetch are isolated in this VM.
@@ -16,6 +16,7 @@ import assert from 'node:assert/strict';
 const filename = process.argv.find((arg, index) => index > 1 && !arg.startsWith('--'))
   || fileURLToPath(new URL('../public/game.html', import.meta.url));
 const strict = process.argv.includes('--strict');
+const mobileOnly = process.argv.includes('--mobile-only');
 const html = fs.readFileSync(filename, 'utf8');
 const inlineScripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)]
   .filter(match => !/\bsrc\s*=/i.test(match[1]) && !/application\/json/i.test(match[1]))
@@ -155,9 +156,9 @@ class Element extends Target {
   load() { this.loadCalls++; }
   toBlob(callback, type = 'image/png') { callback(new Blob(['offline-png-test-only'], {type})); }
   toDataURL(type = 'image/png') { return `data:${type};base64,b2ZmbGluZS10ZXN0LW9ubHk=`; }
-  setPointerCapture() {}
-  releasePointerCapture() {}
-  hasPointerCapture() { return true; }
+  setPointerCapture(pointerId) { (this.pointerCaptures ||= new Set()).add(pointerId); }
+  releasePointerCapture(pointerId) { this.pointerCaptures?.delete(pointerId); }
+  hasPointerCapture(pointerId) { return this.pointerCaptures?.has(pointerId) || false; }
   scrollIntoView() {}
   closest(selector) { return this.matches(selector) ? this : this.parentNode?.closest?.(selector) || null; }
   matches(selector) { return selector.split(',').some(part => {
@@ -254,8 +255,8 @@ const seededMath = Object.create(Math);
 seededMath.random = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 2 ** 32; };
 Object.assign(window, {
   window, self: window, globalThis: window, document,
-  innerWidth: Number(process.env.SMOKE_WIDTH || 1280), innerHeight: Number(process.env.SMOKE_HEIGHT || 900), devicePixelRatio: 1,
-  navigator: {hardwareConcurrency: 8, deviceMemory: 8, userAgent: 'Offline Node smoke harness'},
+  innerWidth: Number(process.env.SMOKE_WIDTH || 1280), innerHeight: Number(process.env.SMOKE_HEIGHT || 900), devicePixelRatio: Number(process.env.SMOKE_DPR || 1),
+  navigator: {hardwareConcurrency: Number(process.env.SMOKE_THREADS || 8), deviceMemory: Number(process.env.SMOKE_MEMORY || 8), maxTouchPoints: process.env.SMOKE_TOUCH === '1' ? 5 : 0, userAgent: 'Offline Node smoke harness'},
   location: {protocol: 'https:', href: 'https://offline.invalid/game.html', origin: 'https://offline.invalid'},
   performance: {now: () => clock}, Math: seededMath, console, AudioContext,
   URL, URLSearchParams, Blob, File,
@@ -268,7 +269,7 @@ Object.assign(window, {
   cancelAnimationFrame: id => frames.delete(id),
   setTimeout: (fn, delay) => schedule(fn, delay), clearTimeout: id => timers.delete(id),
   setInterval: (fn, delay) => schedule(fn, delay, true), clearInterval: id => timers.delete(id),
-  matchMedia: query => ({matches: false, media: query, addEventListener() {}, removeEventListener() {}}),
+  matchMedia: query => ({matches: process.env.SMOKE_TOUCH === '1' && /pointer:\s*coarse/.test(query), media: query, addEventListener() {}, removeEventListener() {}}),
   getComputedStyle: element => ({...element.style, getPropertyValue: key => element.style[key] || ''}),
   ResizeObserver: class {observe() {} disconnect() {}},
   open: (url, target, features) => { externalActions.push({kind:'open',url,target,features});return {closed:false,close(){this.closed=true;}}; },
@@ -330,7 +331,7 @@ check('inline scripts and initial draw', () => {
   assert.equal(audioAllocations.context,0,'Initial page created audio hardware before a gesture');assert.equal(audioElements.length,2,'Initial page did not preload both supplied music recordings');assert.ok(audioElements.every(el=>el.playCalls===0),'Initial page attempted audible playback');
   return `${drawCalls} canvas calls; ${inlineScripts.length} scripts`;
 });
-if (window.__gameTest) {
+if (window.__gameTest && !mobileOnly) {
   await checkAsync('both ending decoders prime muted once and late warm-up cannot interrupt an active ending',async()=>{
     const captain=document.getElementById('breachVideo'),soldier=document.getElementById('soldierVideo'),next=document.getElementById('breachContinue'),still=document.getElementById('breachStill');
     const videos=[captain,soldier],counts=videos.map(video=>video.playCalls);
@@ -548,6 +549,9 @@ if (window.__gameTest) {
     dispatch(window, 'pointercancel', {pointerId: 1});
     regression('pointercancel releases drag', !state().dragging && state().player.targetX == null, 'Cancelled touch leaves dragging/target active.');
     dispatch(window, 'pointerup', {pointerId: 1});
+    // First touch on a hybrid desktop activates the thumb layout and schedules
+    // one resize. Settle that layout before unrelated freeze-clock assertions.
+    elapseTimers(150);
   });
   check('artillery targets and fires', () => {
     if (!exists('activateArtillery')) return 'Skipped: no artillery feature';
@@ -732,7 +736,8 @@ if (window.__gameTest) {
     check('three projectile hits end the run and immunity prevents stacked damage', () => {
       start();evaluate('waveRest=100000;enemies=[]');assert.equal(evaluate('player.lives'),3);
       hitSoldier();assert.equal(evaluate('player.lives'),2);assert.equal(evaluate('player.hitInvulnerability'),90);assert.equal(state().gameOver,false);
-      assert.equal(document.getElementById('livesVal').textContent,'2/3 · HOP');assert.equal(document.getElementById('dashBtn').textContent,'HOP BOOST · SHIFT');
+      assert.equal(document.getElementById('livesVal').textContent,'2/3 · HOP');
+      assert.equal(document.getElementById('dashBtn').textContent,evaluate('touchInputActive')?'HOP BOOST':'HOP BOOST · SHIFT');
       hitSoldier();assert.equal(evaluate('player.lives'),2,'Immediate second round bypassed immunity');assert.equal(evaluate('hostileShots.length'),0);
       for(let index=0;index<89;index++)evaluate('update()');assert.equal(evaluate('player.hitInvulnerability'),1);
       hitSoldier();assert.equal(evaluate('player.lives'),2,'Last immune frame accepted damage');
@@ -950,7 +955,7 @@ if (window.__gameTest) {
       const appearances=JSON.parse(evaluate('JSON.stringify(Array.from({length:160},(_,i)=>createPassengerAppearance(100+i*31)))'));
       assert.equal(seed,rngBefore,'Appearance generation consumed combat randomness');
       assert.ok(new Set(appearances.map(a=>JSON.stringify(a))).size>150,'Fictional appearances did not vary');
-      assert.ok(new Set(appearances.map(a=>a.skin)).size>=6);assert.ok(new Set(appearances.map(a=>a.hairStyle)).size===6);
+      assert.equal(new Set(appearances.map(a=>a.skin)).size,evaluate('PASSENGER_SKINS.length'),'The configured palette was not represented');assert.ok(new Set(appearances.map(a=>a.hairStyle)).size===6);
       for(const a of appearances){for(const color of ['skin','skinShade','skinLight','hair','shirt','shirtShade'])assert.match(a[color],/^#[0-9a-f]{6}$/i);assert.ok(Number.isInteger(a.hairStyle)&&a.hairStyle>=0&&a.hairStyle<=5);assert.ok(a.headWidth>=.86&&a.headWidth<=1);assert.ok(a.headHeight>=.92&&a.headHeight<=1);assert.ok(a.eyeSpacing>=.24&&a.eyeSpacing<=.32);assert.equal(typeof a.facialHair,'boolean');}
       assert.deepEqual(JSON.parse(evaluate('JSON.stringify(createPassengerAppearance(100))')),appearances[0]);
       evaluate('spawnEnemy();enemies[0].approach=.75;positionApproachingBoat(enemies[0]);releasePassengers(enemies[0]);floatingPassengers.forEach(p=>{p.age=30;p.life=200;})');
@@ -1378,6 +1383,211 @@ if (window.__gameTest) {
   check('resize and render at mobile width', () => {
     window.innerWidth = 390; window.innerHeight = 844; evaluate('resize();draw()');
     assert.ok(Number.isFinite(state().player.y));
+  });
+}
+if (window.__gameTest) {
+  const left = document.getElementById('moveLeftBtn');
+  const right = document.getElementById('moveRightBtn');
+  const fire = document.getElementById('fireBtn');
+  const controls = document.getElementById('mobileControls');
+  const canvas = document.getElementById('gameCanvas');
+  const touch = (target, type, pointerId, extra = {}) => dispatch(target, type, {
+    pointerId, pointerType: 'touch', button: 0, buttons: type === 'pointerup' ? 0 : 1,
+    clientX: canvas.clientWidth / 2, clientY: canvas.clientHeight / 2,
+    ...extra,
+  });
+  const holds = () => JSON.parse(evaluate('JSON.stringify(touchHeld)'));
+  check('mobile controls are inactive in the menu and enabled only for a live run', () => {
+    evaluate('resetGame()');
+    assert.equal(controls.classList.contains('playing'), false);
+    for (const button of [left,right,fire]) assert.equal(button.disabled, true);
+    touch(left,'pointerdown',101); assert.equal(evaluate('controlPointers.size'), 0);
+    start();
+    assert.equal(controls.classList.contains('playing'), true);
+    for (const button of [left,right,fire]) assert.equal(button.disabled, false);
+  });
+  check('mobile movement and fire use independent fingers and ignore unrelated pointer release', () => {
+    start(); const before = state().player.x;
+    touch(left,'pointerdown',101); touch(fire,'pointerdown',102);
+    evaluate('update()');
+    assert.ok(state().player.x < before); assert.ok(state().bullets > 0);
+    touch(window,'pointerup',103);
+    assert.deepEqual(holds(),{left:true,right:false,fire:true});
+    touch(window,'pointerup',101);
+    assert.deepEqual(holds(),{left:false,right:false,fire:true});
+    const stoppedX = state().player.x;
+    evaluate('player.cooldown=0;bullets=[];update()');
+    assert.equal(state().player.x, stoppedX); assert.ok(state().bullets > 0);
+    touch(window,'pointerup',102);
+    evaluate('player.cooldown=0;bullets=[];update()');
+    assert.equal(state().bullets,0); assert.equal(evaluate('controlPointers.size'),0);
+  });
+  check('two fingers on the same mobile action remain held until both are released', () => {
+    start(); touch(right,'pointerdown',111); touch(right,'pointerdown',112);
+    touch(window,'pointerup',111);
+    assert.equal(holds().right,true); assert.equal(right.classList.contains('pressed'),true);
+    touch(window,'pointerup',112);
+    assert.equal(holds().right,false); assert.equal(right.classList.contains('pressed'),false);
+  });
+  check('touch canvas drag retains its owner when another finger uses support controls', () => {
+    start(); touch(canvas,'pointerdown',201,{clientX:canvas.clientWidth*.25});
+    const target = state().player.targetX;
+    touch(canvas,'pointermove',202,{clientX:canvas.clientWidth*.9});
+    assert.equal(state().player.targetX,target,'Another pointer stole the existing drag');
+    touch(document.getElementById('dashBtn'),'pointerdown',202);
+    touch(window,'pointerup',202);
+    assert.equal(state().dragging,true); assert.equal(evaluate('canvasPointerId'),201);
+    touch(canvas,'pointermove',201,{clientX:canvas.clientWidth*.65});
+    assert.ok(state().player.targetX>target);
+    touch(canvas,'lostpointercapture',201,{bubbles:false});
+    assert.equal(state().dragging,false); assert.equal(state().player.targetX,null);
+  });
+  check('pointer cancellation and lost capture release only the affected thumb control', () => {
+    start(); touch(left,'pointerdown',301); touch(fire,'pointerdown',302);
+    touch(window,'pointercancel',302);
+    assert.deepEqual(holds(),{left:true,right:false,fire:false});
+    touch(left,'lostpointercapture',301,{bubbles:false});
+    assert.deepEqual(holds(),{left:false,right:false,fire:false});
+    assert.equal(evaluate('controlPointers.size'),0);
+  });
+  check('opening a modal clears touch holds and resuming never resumes an old finger', () => {
+    start(); touch(right,'pointerdown',401); touch(fire,'pointerdown',402);
+    run('GameHelp.open()');
+    assert.equal(state().running,false); assert.equal(controls.classList.contains('playing'),false);
+    assert.deepEqual(holds(),{left:false,right:false,fire:false});
+    assert.equal(evaluate('controlPointers.size'),0);
+    const before = state().frame; tick(20); assert.equal(state().frame,before);
+    run('GameHelp.close()'); assert.equal(state().running,true);
+    touch(window,'pointerup',401); touch(window,'pointerup',402);
+    evaluate('player.cooldown=0;bullets=[];update()'); assert.equal(state().bullets,0);
+  });
+  check('blur pauses the run and clears touch, drag and keyboard inputs together', () => {
+    start(); touch(right,'pointerdown',501); touch(fire,'pointerdown',502);
+    key('ArrowLeft',true); dispatch(window,'blur');
+    assert.equal(state().running,false); assert.equal(evaluate('paused'),true);
+    assert.deepEqual(holds(),{left:false,right:false,fire:false});
+    assert.equal(evaluate('controlPointers.size'),0);
+    assert.equal(Object.values(state().keys).some(Boolean),false);
+    document.getElementById('resumeBtn').click(); assert.equal(state().running,true);
+    assert.equal(controls.classList.contains('playing'),true);
+  });
+  check('sniper touch aims without a shot and the separate fire thumb respects reload', () => {
+    start(); evaluate('toggleSniper()');
+    const shots = evaluate('sniper.shots');
+    touch(canvas,'pointerdown',601,{clientX:canvas.clientWidth*.5,clientY:canvas.clientHeight*.45});
+    assert.equal(evaluate('sniper.shots'),shots);
+    const aim = evaluate('sniper.x');
+    touch(canvas,'pointermove',601,{clientX:canvas.clientWidth*.5+40,clientY:canvas.clientHeight*.45});
+    const change = evaluate('sniper.x')-aim;
+    assert.ok(change>0&&change<40,'Sniper drag should provide fine relative aim');
+    touch(fire,'pointerdown',602); assert.equal(evaluate('sniper.shots'),shots+1);
+    for(let index=0;index<10;index++)evaluate('update()');
+    assert.equal(evaluate('sniper.shots'),shots+1,'Sniper hold bypassed reload');
+    touch(window,'pointerup',601); assert.equal(holds().fire,true);
+    for(let index=0;index<45;index++)evaluate('update()');
+    assert.ok(evaluate('sniper.shots')>shots+1,'Held fire did not repeat after reload');
+    touch(window,'pointerup',602);
+    const released = evaluate('sniper.shots');
+    for(let index=0;index<50;index++)evaluate('update()');
+    assert.equal(evaluate('sniper.shots'),released);
+  });
+  check('keyboard and mouse controls still work after touch controls have been used', () => {
+    start(); const before = state().player.x;
+    key('ArrowRight',true); key(' ',true); evaluate('update()');
+    assert.ok(state().player.x>before); assert.ok(state().bullets>0);
+    key('ArrowRight',false); key(' ',false);
+    evaluate('toggleSniper()');
+    dispatch(canvas,'pointerdown',{pointerId:701,pointerType:'mouse',button:0,clientX:canvas.clientWidth*.4,clientY:canvas.clientHeight*.4});
+    assert.equal(evaluate('sniper.shots'),1,'Mouse sniper click no longer fires immediately');
+    dispatch(window,'pointerup',{pointerId:701,pointerType:'mouse'});
+  });
+  check('rotation preserves the live battle, reprojects boats and pauses with every finger released', () => {
+    evaluate('resetGame()'); window.innerWidth=390; window.innerHeight=844; evaluate('resize()'); start();
+    evaluate(`
+      player.x=W*.28-player.w/2;
+      for(let i=0;i<3;i++){spawnEnemy();const e=enemies[i];e.approach=.2+i*.18;e.lane=.2+i*.3;positionApproachingBoat(e);}
+      fireBullet();applyPowerup('cluster');deployCluster();applyPowerup('airstrike');deployAirstrike();deployFlare();
+      for(let i=0;i<35;i++)updateSupportWeapons();
+    `);
+    const progress=evaluate('JSON.stringify(enemies.map(e=>[e.lane,e.approach,e.hp]))');
+    const counts=()=>evaluate('JSON.stringify([score,wave,playTicks,enemies.length,bullets.length,mines.length,scheduledBlasts.length,illuminationFlares.length])');
+    const center=evaluate('(player.x+player.w/2)/W');
+    touch(left,'pointerdown',801); touch(fire,'pointerdown',802);
+    // A fire press may add one bullet; establish the rotation baseline afterward.
+    const beforeRotation=counts();
+    window.innerWidth=844; window.innerHeight=390; evaluate('resize();draw()');
+    assert.equal(state().running,false); assert.equal(evaluate('paused'),true);
+    assert.equal(evaluate('gameOver'),false); assert.equal(counts(),beforeRotation);
+    assert.equal(evaluate('JSON.stringify(enemies.map(e=>[e.lane,e.approach,e.hp]))'),progress);
+    assert.ok(Math.abs(evaluate('(player.x+player.w/2)/W')-center)<1e-8);
+    assert.ok(evaluate('enemies.every(e=>e.prevX===e.x&&e.prevY===e.y&&e.x>=0&&e.x+e.type.w<=W&&e.y>=HORIZON_Y)'));
+    assert.deepEqual(holds(),{left:false,right:false,fire:false}); assert.equal(evaluate('controlPointers.size'),0);
+    const frameBefore=state().frame; tick(20); assert.equal(state().frame,frameBefore);
+    document.getElementById('resumeBtn').click(); assert.equal(state().running,true);
+    window.innerWidth=390; window.innerHeight=844; evaluate('resize();draw()');
+    assert.equal(evaluate('paused'),true); assert.equal(counts(),beforeRotation);
+    assert.ok(Math.abs(evaluate('(player.x+player.w/2)/W')-center)<1e-8);
+    assert.equal(evaluate('JSON.stringify(enemies.map(e=>[e.lane,e.approach,e.hp]))'),progress);
+  });
+  check('browser chrome resize preserves sea depth and pinch zoom does not shrink the world', () => {
+    evaluate('resetGame()');window.innerWidth=390;window.innerHeight=844;
+    window.visualViewport=Object.assign(new Target(),{width:390,height:800,scale:1});
+    evaluate('resize()');start();evaluate('spawnEnemy();enemies[0].approach=.55;positionApproachingBoat(enemies[0])');
+    const approach=evaluate('enemies[0].approach');
+    window.visualViewport.height=700;evaluate('resize();draw()');
+    assert.equal(evaluate('H'),700);assert.equal(evaluate('enemies[0].approach'),approach);
+    assert.equal(state().running,true,'Browser chrome resize should not force a rotation pause');
+    window.visualViewport.scale=2;window.visualViewport.height=350;evaluate('resize();draw()');
+    assert.equal(evaluate('H'),844,'Pinch zoom shrank the simulation to the visual viewport');
+    assert.equal(evaluate('enemies[0].approach'),approach);
+    delete window.visualViewport;evaluate('resetGame();resize()');
+  });
+  check('graphics quality lowers the pixel workload without cancelling held controls or changing game state', () => {
+    start();evaluate('qualityLevel=1;resize();spawnEnemy()');
+    touch(right,'pointerdown',901);touch(fire,'pointerdown',902);
+    const before=evaluate('JSON.stringify({player,enemies,bullets,score,wave,playTicks})');
+    const pixels=canvas.width*canvas.height;
+    evaluate('qualityLevel=0;resize();draw()');
+    assert.ok(canvas.width*canvas.height<=pixels);
+    assert.ok(canvas.width*canvas.height<665000,'Economy mode exceeded its screen pixel budget');
+    assert.equal(evaluate('JSON.stringify({player,enemies,bullets,score,wave,playTicks})'),before);
+    assert.equal(state().running,true);assert.deepEqual(holds(),{left:false,right:true,fire:true});
+    touch(window,'pointerup',901);touch(window,'pointerup',902);
+  });
+  check('paused and menu frames cannot promote graphics quality before real combat resumes', () => {
+    start();evaluate('waveRest=100000;enemies=[];qualityLevel=0;fastFrames=599;slowFrames=0;resize()');
+    document.getElementById('pauseBtn').click();assert.equal(state().running,false);
+    tick(10);
+    assert.equal(evaluate('qualityLevel'),0,'Cheap paused frames raised gameplay quality');
+    assert.equal(evaluate('fastFrames'),599,'Paused frames contributed to the recovery window');
+    document.getElementById('resumeBtn').click();assert.equal(state().running,true);
+    tick(4);assert.equal(evaluate('qualityLevel'),1,'Actual combat frames no longer recover quality');
+    evaluate('resetGame();qualityLevel=0;fastFrames=599;slowFrames=0;resize()');
+    tick(10);assert.equal(evaluate('qualityLevel'),0,'Cheap title-screen frames raised gameplay quality');
+    assert.equal(evaluate('fastFrames'),599);
+  });
+  check('rotation keeps existing passengers, wrecks and oil at the same world scale as the boats', () => {
+    evaluate('resetGame()');window.innerWidth=390;window.innerHeight=844;evaluate('resize()');start();
+    evaluate(`
+      spawnEnemy();
+      {const e=enemies[0];e.baseType=ENEMY_TYPES.find(type=>type.family==='lifeboat');e.type={...e.baseType};
+       e.passengerSpots=buildPassengerLayout(e.type);e.approach=.8;positionApproachingBoat(e);spawnWreck(e);}
+    `);
+    assert.ok(evaluate('floatingPassengers.length>0&&wrecks.length===1&&oilSlicks.length===1'));
+    const dimensions=()=>JSON.parse(evaluate('JSON.stringify({passengers:floatingPassengers.map(p=>p.size/worldScale),wrecks:wrecks.map(w=>[w.w/worldScale,w.h/worldScale]),oil:oilSlicks.map(s=>s.size/worldScale)})'));
+    const identities=evaluate('JSON.stringify(floatingPassengers.map(p=>[p.appearance,p.life,p.age]))');
+    const original=dimensions(),originalScale=evaluate('worldScale');
+    const assertDimensions=()=>{
+      const next=dimensions();
+      for(const field of ['passengers','wrecks','oil']){
+        const expected=original[field].flat(),actual=next[field].flat();assert.equal(actual.length,expected.length);
+        actual.forEach((value,index)=>assert.ok(Math.abs(value-expected[index])<1e-8,field+' changed size relative to the world'));
+      }
+      assert.equal(evaluate('JSON.stringify(floatingPassengers.map(p=>[p.appearance,p.life,p.age]))'),identities,'Rotation reset passenger identity or lifetime');
+    };
+    window.innerWidth=844;window.innerHeight=390;evaluate('resize();draw()');
+    assert.notEqual(evaluate('worldScale'),originalScale,'Fixture must exercise a world-scale change');assertDimensions();
+    window.innerWidth=390;window.innerHeight=844;evaluate('resize();draw()');assertDimensions();
   });
 }
 await Promise.resolve(); await Promise.resolve();

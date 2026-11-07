@@ -1,0 +1,255 @@
+/* Touch layouts share the same game world and preserve desktop controls. */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --touch-dock-height: 188px;
+  --touch-edge: 10px;
+  --touch-button: 64px;
+}
+html, body {
+  overscroll-behavior: none;
+  touch-action: auto;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+body { height: 100vh; height: 100dvh; }
+#gameCanvas { height: 100vh; height: 100dvh; -webkit-user-select: none; user-select: none; }
+button, [role="button"], .invBtn { -webkit-tap-highlight-color: transparent; }
+#gameCanvas, #inventory, #dashBtn, #sniperBtn, #flareBtn, #mobileControls {
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+/* Let dialogs scroll and zoom independently of the playfield. */
+#overlay, #leaderboardModal, #helpModal, #achievementShare, #audioPanel, #pausePanel, #breachClip {
+  padding-top: max(12px, var(--safe-top));
+  padding-right: max(12px, var(--safe-right));
+  padding-bottom: max(12px, var(--safe-bottom));
+  padding-left: max(12px, var(--safe-left));
+  touch-action: pan-y pinch-zoom;
+  overscroll-behavior: contain;
+}
+#overlay {
+  padding-left: max(clamp(20px, 7vw, 110px), var(--safe-left));
+  padding-right: max(clamp(20px, 7vw, 110px), var(--safe-right));
+  overflow-y: auto;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+#briefing { flex: 0 0 auto; max-width: 100%; margin-block: auto; padding-block: 20px; }
+#overlay .menuSecondary { flex-wrap: wrap; gap: 4px 22px; }
+#overlay .menuSecondary button { min-height: 44px; min-width: 44px; }
+#overlay #startBtn { min-height: 48px; }
+.menuCoordinates { pointer-events: none; }
+#runReport { flex-wrap: wrap; }
+.leaderboardCard, .helpCard, .achievementShareCard, .audioCard, #pausePanel .tacticalPanel {
+  max-width: 100%;
+  max-height: calc(100vh - max(12px, var(--safe-top)) - max(12px, var(--safe-bottom)));
+  max-height: calc(100dvh - max(12px, var(--safe-top)) - max(12px, var(--safe-bottom)));
+}
+.leaderboardCard, .audioCard, #pausePanel .tacticalPanel { overflow-y: auto; }
+.leaderboardHead { flex-shrink: 0; gap: 10px; }
+.helpBody, .achievementShareBody { min-height: 0; -webkit-overflow-scrolling: touch; }
+#leaderboardClose, #helpClose, #shareClose { min-width: 44px; width: 44px; height: 44px; flex: 0 0 44px; }
+.boardMetricTabs { touch-action: pan-x; }
+.boardMetricTabs button, #submitScoreBtn, #leaderboardNewGame, .boardShareActions button,
+.shareOptions button, .shareDestinations a, #resumeBtn, #audioClose, .breachControls button {
+  min-height: 44px;
+}
+.rankLadder summary { min-height: 44px; padding-block: 12px; }
+#callsignInput, #shareCaption { font-size: 16px; line-height: 1.4; }
+.breachCard { max-width: 100%; }
+.breachControls { flex-wrap: wrap; }
+
+#mobileControls {
+  display: none;
+  position: fixed;
+  z-index: 18;
+  inset: auto max(10px, var(--safe-right)) calc(8px + var(--safe-bottom)) max(10px, var(--safe-left));
+  max-width: 1080px;
+  margin-inline: auto;
+  height: var(--touch-button);
+  justify-content: space-between;
+  align-items: stretch;
+  pointer-events: none;
+}
+#movePad { display: flex; gap: 8px; pointer-events: none; }
+.touchControl {
+  width: var(--touch-button);
+  min-height: var(--touch-button);
+  padding: 0;
+  border: 1px solid #bfddd36b;
+  border-radius: 12px;
+  background: linear-gradient(160deg, #17343fe8, #071b24f0);
+  box-shadow: inset 0 1px #e4f4e12e, 0 4px 12px #0004;
+  color: #eef7e7;
+  font: 800 24px/1 system-ui, sans-serif;
+  pointer-events: auto;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+#fireBtn {
+  width: calc(var(--touch-button) + 12px);
+  border-color: #ffda8a88;
+  background: linear-gradient(160deg, #624523e8, #302619f2);
+  color: #ffe2a2;
+  font-size: 13px;
+  letter-spacing: .09em;
+}
+.touchControl.pressed { background: #cdad6d; color: #10232a; border-color: #fff2bf; transform: translateY(1px); }
+.touchControl:focus-visible { outline: 3px solid #ffe0a0; outline-offset: 2px; }
+.touchControl:disabled { pointer-events: none; }
+@media (any-pointer: coarse) {
+  #mobileControls.playing { display: flex; }
+}
+:is(.touch-device, .touch-input) #mobileControls.playing { display: flex; }
+:is(.touch-device, .touch-input) #hint { display: none; }
+:is(.touch-device, .touch-input) #ui {
+  width: min(100%, 1120px);
+  padding: calc(6px + var(--safe-top)) max(10px, var(--safe-right)) 0 max(10px, var(--safe-left));
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-rows: 49px 44px;
+  gap: 5px;
+  filter: none;
+}
+:is(.touch-device, .touch-input) #ui > div {
+  min-height: 44px;
+  padding: 4px 7px;
+  font-size: 14px;
+  letter-spacing: .02em;
+}
+:is(.touch-device, .touch-input) #ui > div:nth-child(-n+3) { grid-column: span 4; }
+:is(.touch-device, .touch-input) #ui > div:nth-child(n+4) { grid-column: span 3; }
+:is(.touch-device, .touch-input) #ui small { font-size: 8px; letter-spacing: .04em; }
+:is(.touch-device, .touch-input) .hudBest { position: static; font-size: 8px; letter-spacing: 0; }
+:is(.touch-device, .touch-input) .hudHeadshots { font-size: 8px; gap: 3px; letter-spacing: 0; }
+:is(.touch-device, .touch-input) .hudLives { gap: 3px; font-size: 8px; letter-spacing: 0; }
+:is(.touch-device, .touch-input) .hudLives b, :is(.touch-device, .touch-input) .hudLives i { font-size: 8px; }
+:is(.touch-device, .touch-input) #combatStatus { top: calc(110px + var(--safe-top)); max-width: calc(100% - 24px); font-size: 8px; white-space: normal; }
+:is(.touch-device, .touch-input) #operationStatus { display: none; }
+:is(.touch-device, .touch-input) #environmentStatus { top: calc(142px + var(--safe-top)); font-size: 8px; letter-spacing: .08em; }
+:is(.touch-device, .touch-input) #placeHint { top: calc(144px + var(--safe-top)); padding: 6px 10px; font-size: 10px; background: #071b24db; }
+:is(.touch-device, .touch-input) #inventory {
+  left: max(10px, var(--safe-left));
+  right: max(10px, var(--safe-right));
+  bottom: calc(132px + var(--safe-bottom));
+  width: auto;
+  max-width: 1080px;
+  margin-inline: auto;
+  padding: 0;
+  transform: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+:is(.touch-device, .touch-input) .invBtn {
+  position: relative;
+  min-width: 0;
+  min-height: 48px;
+  padding: 8px 5px 5px;
+  justify-content: center;
+  font-size: 9px;
+  letter-spacing: .04em;
+}
+:is(.touch-device, .touch-input) .invBtn .count { top: 3px; right: 4px; margin: 0; font-size: 10px; }
+:is(.touch-device, .touch-input) :is(#flareBtn, #dashBtn, #sniperBtn) {
+  bottom: calc(80px + var(--safe-bottom));
+  height: 44px;
+  min-height: 44px;
+  width: calc((100% - max(10px, var(--safe-left)) - max(10px, var(--safe-right)) - 16px) / 3);
+  padding: 6px 3px;
+  font-size: 9px;
+  letter-spacing: .03em;
+  border-radius: 5px;
+}
+:is(.touch-device, .touch-input) #flareBtn { left: max(10px, var(--safe-left)); right: auto; }
+:is(.touch-device, .touch-input) #dashBtn { left: 50%; right: auto; transform: translateX(-50%); }
+:is(.touch-device, .touch-input) #sniperBtn { right: max(10px, var(--safe-right)); left: auto; }
+:is(.touch-device, .touch-input) #sniperStatus { bottom: calc(190px + var(--safe-bottom)); width: max-content; max-width: calc(100% - 24px); font-size: 9px; }
+:is(.touch-device, .touch-input) #waveBanner { top: 30%; }
+:is(.touch-device, .touch-input) #leaderboardModal,
+:is(.touch-device, .touch-input) #helpModal,
+:is(.touch-device, .touch-input) #achievementShare,
+:is(.touch-device, .touch-input) #audioPanel,
+:is(.touch-device, .touch-input) #pausePanel { backdrop-filter: none; }
+
+/* Wide tablets have enough room for the metrics and four proper touch targets. */
+@media (min-width: 700px) {
+  :is(.touch-device, .touch-input) #ui { grid-template-columns: 1.15fr 1fr 1fr repeat(4, 48px); grid-template-rows: 50px; }
+  :is(.touch-device, .touch-input) #ui > div:nth-child(n) { grid-column: auto; }
+  :is(.touch-device, .touch-input) #combatStatus { top: calc(64px + var(--safe-top)); }
+  :is(.touch-device, .touch-input) #environmentStatus { top: calc(94px + var(--safe-top)); }
+  :is(.touch-device, .touch-input) #placeHint { top: calc(96px + var(--safe-top)); }
+}
+/* Landscape phones use the centre of the control deck, leaving both thumbs free. */
+@media (min-width: 480px) and (max-height: 600px) and (orientation: landscape) {
+  :root { --touch-dock-height: 112px; --touch-button: 52px; }
+  :is(.touch-device, .touch-input) #ui { grid-template-columns: 1.15fr 1fr 1fr repeat(4, 44px); grid-template-rows: 48px; gap: 4px; padding-top: calc(4px + var(--safe-top)); }
+  :is(.touch-device, .touch-input) #ui > div:nth-child(n) { grid-column: auto; padding-inline: 5px; font-size: 12px; }
+  :is(.touch-device, .touch-input) #ui small { font-size: 7px; }
+  :is(.touch-device, .touch-input) .hudBest, :is(.touch-device, .touch-input) .hudHeadshots,
+  :is(.touch-device, .touch-input) .hudLives b, :is(.touch-device, .touch-input) .hudLives i { font-size: 7px; }
+  :is(.touch-device, .touch-input) #combatStatus { top: calc(58px + var(--safe-top)); padding: 3px 7px; font-size: 7px; }
+  :is(.touch-device, .touch-input) #environmentStatus { display: none; }
+  :is(.touch-device, .touch-input) #placeHint { top: calc(58px + var(--safe-top)); }
+  :is(.touch-device, .touch-input) #waveBanner { top: 29%; padding: 6px; }
+  :is(.touch-device, .touch-input) #waveBanner small { font-size: 8px; margin-bottom: 3px; }
+  :is(.touch-device, .touch-input) #waveBanner strong { font-size: 22px; }
+  :is(.touch-device, .touch-input) #inventory {
+    left: calc(128px + var(--safe-left));
+    right: calc(88px + var(--safe-right));
+    bottom: calc(60px + var(--safe-bottom));
+    gap: 6px;
+  }
+  :is(.touch-device, .touch-input) .invBtn { min-height: 44px; padding-block: 3px; font-size: 8px; }
+  :is(.touch-device, .touch-input) .invBtn .icon { margin-bottom: 2px; font-size: 11px; }
+  :is(.touch-device, .touch-input) :is(#flareBtn, #dashBtn, #sniperBtn) {
+    bottom: calc(8px + var(--safe-bottom));
+    width: calc((100% - 228px - var(--safe-left) - var(--safe-right)) / 3);
+    font-size: 8px;
+  }
+  :is(.touch-device, .touch-input) #flareBtn { left: calc(128px + var(--safe-left)); }
+  :is(.touch-device, .touch-input) #dashBtn { left: calc(128px + var(--safe-left) + (100% - 228px - var(--safe-left) - var(--safe-right)) / 3 + 6px); transform: none; }
+  :is(.touch-device, .touch-input) #sniperBtn { right: calc(88px + var(--safe-right)); }
+  :is(.touch-device, .touch-input) #sniperStatus { bottom: calc(112px + var(--safe-bottom)); font-size: 8px; padding: 4px 7px; }
+}
+@media (max-width: 360px) {
+  :root { --touch-button: 60px; }
+  #overlay { padding-inline: max(20px, var(--safe-left)); }
+  #overlay h1 { font-size: 54px; }
+  #overlay .menuSecondary { gap: 0 14px; }
+  .leaderboardHead h2 { font-size: 17px; }
+  .helpControls, .powerKeyGrid { grid-template-columns: 1fr; }
+  .achievementShareHead h2 { font-size: 15px; }
+  .personalMetricGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 10px; }
+}
+@media (max-height: 600px) {
+  #briefing { padding-block: 12px; }
+  #overlay h1 { font-size: clamp(35px, 10vh, 56px); margin: 10px 0; }
+  #overlay p { font-size: 11px; line-height: 1.5; max-width: 560px; }
+  #overlay .kicker { font-size: 9px; margin-bottom: 6px; }
+  #overlay #startBtn { margin-top: 12px; padding-block: 12px; }
+  #overlay .menuSecondary { margin-top: 5px; }
+  #overlay .stat { margin-top: 8px; }
+  .editionTag, .menuCoordinates { display: none; }
+  .audioCard { padding: 18px; }
+  .audioCard p { margin-bottom: 12px; }
+  .audioToggle { min-height: 54px; margin-block: 6px; }
+  .breachCard { width: min(440px, calc(100vw - 32px), calc(100dvh - 126px)); }
+  .breachControls { margin-top: 8px; gap: 8px; }
+  .breachControls button { padding: 8px 12px; }
+  #breachContinue { min-width: 140px; }
+  #breachStatus { margin-top: 6px; font-size: 9px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .touchControl { transition: none; }
+}
+
+/* Expensive compositing is optional; aiming and game rules are unchanged. */
+.economy-graphics :is(#leaderboardModal, #helpModal, #achievementShare, #audioPanel, #pausePanel) { backdrop-filter: none; }
+.economy-graphics #ui { filter: none; }
+.economy-graphics :is(#gameCanvas, .touchControl, .invBtn, .audioCard, .leaderboardCard, .helpCard, .achievementShareCard) { box-shadow: none; }

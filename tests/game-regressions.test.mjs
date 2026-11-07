@@ -145,7 +145,8 @@ test("in-game help explains controls and every power-up", () => {
   assert.match(help, /One unblocked landing ends the operation/);
   assert.match(help, /All upgrades reset on a new run/);
   assert.match(help, /A \/ D or ← \/ →/);
-  assert.match(help, /Hold Space, mouse or touch to keep firing/);
+  assert.match(help, /Hold FIRE with your other thumb, Space, or the mouse to keep firing/);
+  assert.match(help, /On touch, hold the left or right thumb button/);
   assert.match(help, /Shift or DASH/);
   assert.match(help, /P or Escape\. Help and rankings also pause the action/);
   assert.match(help, /press E or tap SNIPER/);
@@ -331,7 +332,7 @@ test("sniper precision shots reward the nearest eligible passenger once and enfo
   assert.equal(miss.state().sniper.headshots,0);
   assert.equal(miss.state().remaining.length,3);
   assert.match(extractFunction("fireBullet"), /sniper\.active/);
-  assert.match(extractFunction("update"), /!sniper\.active && \(keys\[' '\] \|\| dragging\)/);
+  assert.match(extractFunction("update"), /!sniper\.active && \(keys\[' '\] \|\| dragging \|\| touchHeld\.fire\)/);
 });
 
 test("sniper detail is rendered directly into a bounded optical canvas, not upscaled from the game", () => {
@@ -722,7 +723,7 @@ test("callsigns are normalized, ownership-checked, and race-safe", () => {
   assert.match(leaderboardRoute, /That callsign is already taken\. Choose another\./);
   assert.match(leaderboardRoute, /isCallsignConflict\(error\)/);
   assert.match(leaderboardRoute, /callsign = excluded\.callsign/);
-  assert.match(html, /response\.status\s*===\s*409/);
+  assert.match(html, /error\.status\s*===\s*409/);
   assert.match(html, /callsignInput\.select\(\)/);
   assert.match(extractFunction("renderEntries"), /displayCallsign\(entry\.callsign\)/);
   assert.match(extractFunction("displayCallsign"), /\^A-Z0-9 _~-/);

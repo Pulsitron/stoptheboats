@@ -8,9 +8,9 @@
     {
       "binding": "DB",
       "database_name": "stop-the-boats-leaderboard",
-      // Replace this local-development placeholder with your own D1 UUID
-      // before applying remote migrations or deploying.
-      "database_id": "00000000-0000-4000-8000-000000000000",
+      // Preserved from the supplied game. Keep this binding for an update to
+      // the same deployment so existing leaderboard records remain attached.
+      "database_id": "31b4ac72-53ae-455e-b499-2623c2d30575",
       "migrations_dir": "drizzle"
     }
   ]

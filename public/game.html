@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Stop the Boats — Operation Tidebreak</title>
 <style>
   :root {
@@ -175,9 +175,9 @@
     font: 950 10px/1 inherit; letter-spacing: .11em; text-transform: uppercase; cursor: pointer;
   }
   #submitScoreBtn:disabled { opacity: .38; cursor: default; filter: grayscale(.6); }
-  #leaderboardStatus { min-height: 14px; margin-top: 7px; color: rgba(208,238,244,.62); font-size: 9px; letter-spacing: .05em; text-align: left; }
-  #leaderboardStatus.success { color: #9eeec1; }
-  #leaderboardStatus.error { color: #ffb39a; }
+  #leaderboardStatus, #leaderboardSaveStatus { min-height: 14px; margin-top: 7px; color: rgba(208,238,244,.62); font-size: 10px; line-height: 1.5; letter-spacing: .025em; text-align: left; }
+  #leaderboardStatus.success, #leaderboardSaveStatus.success { color: #9eeec1; }
+  #leaderboardStatus.error, #leaderboardSaveStatus.error { color: #ffb39a; }
   .leaderboardColumns, .leaderboardRow {
     display: grid; grid-template-columns: 42px minmax(0,1fr) 92px 48px;
     align-items: center; column-gap: 7px;
@@ -233,10 +233,6 @@
   .militaryRankPanel .rankHint {max-width:140px;color:#8ca6ad;font:8px/1.5 system-ui;text-align:right;}
   @media(max-width:600px){.militaryRankPanel{padding:10px 13px;grid-template-columns:40px minmax(0,1fr);}#militaryRankName{font-size:14px;}.militaryRankPanel .rankHint{display:none;}#rankLadderList{grid-template-columns:1fr;}.personalMetricGrid{padding:9px 13px;gap:4px;}.personalMetricGrid strong{font-size:10px;}.boardMetricTabs{padding:9px 10px 0;}.boardMetricTabs button{min-width:83px;}.leaderboardNameText small{font-size:7px;}.leaderboardName svg{flex-basis:20px;width:20px;}.boardShareActions{padding:10px 13px;}}
   .helpBody { overflow-y: auto; overscroll-behavior: contain; padding: 16px 18px 19px; }
-  .audioCredits {margin-top:20px;border-top:1px solid #b4d9cf24;padding-top:14px;color:#b7cdce;font:11px/1.65 system-ui;}
-  .audioCredits summary {cursor:pointer;color:#f3ce91;font-weight:750;}
-  .audioCredits a {color:#a8dce5;text-underline-offset:3px;}
-  .audioCredits li {margin:5px 0;}
   .helpLead {
     margin: 0 0 13px; color: rgba(220,244,248,.72); font-size: 11px; line-height: 1.55;
   }
@@ -468,6 +464,7 @@
   #shareClose:focus-visible,.shareOptions button:focus-visible,.shareDestinations a:focus-visible,#shareCaption:focus-visible {outline:2px solid #ffe0a0;outline-offset:3px;}
   @media(max-width:640px){.achievementShareHead{padding:13px 15px;}.achievementShareHead h2{font-size:16px;}.achievementShareBody{display:flex;flex-direction:column;padding:15px;gap:14px;}.sharePreview{width:min(100%,31dvh);margin:auto;}.sharePreview>small{display:none;}#shareSummary{font-size:11px;margin-bottom:10px;}#shareCaption{min-height:74px;font-size:10px;}.shareDestinations{margin-bottom:12px;}.shareGuidance{font-size:9px;}#shareStatus{margin-top:8px;min-height:20px;}}
 </style>
+<link rel="stylesheet" href="/mobile.css">
 </head>
 <body>
 
@@ -499,6 +496,14 @@
 <div id="sniperStatus" role="status" aria-live="polite"></div>
 
 <canvas id="gameCanvas" tabindex="-1" aria-label="Coastal defence playfield"></canvas>
+
+<div id="mobileControls" role="group" aria-label="Touch controls" aria-hidden="true">
+  <div id="movePad" role="group" aria-label="Move soldier">
+    <button id="moveLeftBtn" class="touchControl" type="button" aria-label="Hold to move left" disabled>◀</button>
+    <button id="moveRightBtn" class="touchControl" type="button" aria-label="Hold to move right" disabled>▶</button>
+  </div>
+  <button id="fireBtn" class="touchControl" type="button" aria-label="Hold to fire" disabled>FIRE</button>
+</div>
 
 <div id="placeHint">TAP THE SEA TO PLACE MINE</div>
 
@@ -566,7 +571,7 @@
   <div class="menuCoordinates">N 50° 06′ / W 005° 31′ &nbsp; · &nbsp; OP. TIDEBREAK</div>
 </div>
 
-<section id="pausePanel" role="dialog" aria-modal="true" aria-label="Game paused"><div class="tacticalPanel"><div class="kicker">Operation on hold</div><h2>Paused</h2><p>The shoreline can wait.<br>Press P or Escape to resume.</p><button id="resumeBtn" type="button">Resume operation</button></div></section>
+<section id="pausePanel" role="dialog" aria-modal="true" aria-label="Game paused"><div class="tacticalPanel"><div class="kicker">Operation on hold</div><h2>Paused</h2><p>The shoreline can wait.<br>Tap Resume operation, or press P / Escape.</p><button id="resumeBtn" type="button">Resume operation</button></div></section>
 
 <section id="leaderboardModal" role="dialog" aria-modal="true" aria-labelledby="leaderboardTitle" aria-hidden="true">
   <div class="leaderboardCard">
@@ -588,9 +593,10 @@
     <form id="leaderboardForm">
       <label class="submitLabel" for="callsignInput">Callsign</label>
       <div class="submitControls">
-        <input id="callsignInput" type="text" maxlength="16" autocomplete="nickname" spellcheck="false" value="PLAYER" aria-describedby="leaderboardStatus">
+        <input id="callsignInput" type="text" maxlength="16" autocomplete="nickname" spellcheck="false" placeholder="Choose your callsign" aria-describedby="leaderboardSaveStatus leaderboardStatus">
         <button id="submitScoreBtn" type="submit" disabled>Finish a run to submit</button>
       </div>
+      <div id="leaderboardSaveStatus" role="status" aria-live="polite">Choose a callsign once to save your completed runs automatically.</div>
       <div id="leaderboardStatus" role="status" aria-live="polite">Loading global scores…</div>
     </form>
     <div class="boardMetricTabs" role="tablist" aria-label="Leaderboard statistic">
@@ -615,15 +621,15 @@
     </header>
     <div class="helpBody">
       <p class="helpLead">Clear every contact to reach the next wave. A banner announces it and awards an automatic field upgrade without pausing play. Chain kills within 3.5 seconds for up to ×1.5 points. Larger craft need more hits. One unblocked landing ends the operation. All upgrades reset on a new run.</p>
-      <p class="helpLead"><strong>Return fire:</strong> three direct missile hits end the run. Orange lifeboats warn you with a red sight for one second before firing. The first hit removes one leg: you hop at 72% movement speed, with a smaller hop boost. The second removes the other leg: you crawl at 42% speed and cannot dash. You can still fire, snipe and deploy weapons in either state. Each hit gives 1.5 seconds of recovery so one burst cannot take all three lives. The third hit kills you; press Continue afterwards to see the leaderboard. Missed blasts do not remove lives. Destroying an aiming boat cancels its shot. A boat reaching an undefended shoreline ends the game immediately.</p>
-      <p class="helpLead"><strong>Sniper:</strong> press E or tap SNIPER for a 4× scope. Click or press Space to fire. On touch screens, tap the area you want to target. Headshots earn +15 before the passengers sink; your running headshot count stays visible below Contact Wave in the top bar. Shots reload in 0.7 seconds. E returns to automatic rifle fire; the action never pauses.</p>
-      <p class="helpLead"><strong>Audio and endings:</strong> open the speaker icon or Audio on the main menu for separate Music and Sound Effects switches. If your browser blocks autoplay, use Play clip.</p>
-      <p class="helpLead"><strong>Conditions:</strong> each run has a different weather order, duration, wind and intensity. Nights are dark: sweeping lighthouse beams and your flares reveal parts of the sea. Press F or tap FLARE for about 16 seconds of illumination. Start with three charges; one replenishes every 35 seconds. A new run begins in clear daylight.</p>
+      <p class="helpLead"><strong>Return fire:</strong> three direct missile hits end the run. Orange lifeboats warn you with a red sight for one second before firing. The first hit removes one leg: you hop at 72% movement speed, with a smaller hop boost. The second removes the other leg: you crawl at 42% speed and cannot dash. You can still fire, snipe and deploy weapons in either state. Each hit gives 1.5 seconds of recovery so one burst cannot take all three lives. The third hit plays the Soldier clip; press Continue afterwards to see the leaderboard. Missed blasts do not remove lives. Destroying an aiming boat cancels its shot. A boat reaching an undefended shoreline still ends the game immediately with its separate breach clip.</p>
+      <p class="helpLead"><strong>Sniper:</strong> press E or tap SNIPER for a crisp, directly rendered 4× scope with blacked-out surroundings. Move the pointer to pan the view and place a floating silhouette's head under the central reticle; click or press Space to fire. On touch screens, drag the view for fine aiming, then hold FIRE with another finger to shoot. Headshots earn +15 before the passengers sink; your running headshot count stays visible below Contact Wave in the top bar. Shots reload in 0.7 seconds. Tap RIFLE or press E to return to automatic rifle fire; the action never pauses.</p>
+      <p class="helpLead"><strong>Audio and endings:</strong> open the speaker icon or Audio on the main menu for separate Music and Sound Effects switches. Triumphal Fanfare plays on the title screen and leaderboard; Untitled plays during the operation. Audio starts after your first click or key press. SFX also controls the ending videos. Your choices persist between runs. Ending clips play automatically without playback controls or skipping; the last image stays on screen until you press Continue. If your browser blocks autoplay, use Play clip.</p>
+      <p class="helpLead"><strong>Conditions:</strong> each run has a different weather order, duration, wind and intensity, with smooth transitions. Rain leaves puddles; snow settles on the beach and melts gradually. Drifting sea mist obscures boats. Nights now pass twice as quickly, while daylight keeps its previous duration. Nights are dark: sweeping lighthouse beams and your flares reveal parts of the sea. Press F or tap FLARE for about 16 seconds of illumination. Start with three charges; one replenishes every 35 seconds. A new run begins in clear daylight.</p>
       <p class="helpLead"><strong>Rankings:</strong> each of the five boards keeps your personal best for score, boats stopped, best chain, time held or headshots—even when those records come from different runs. Older score records are preserved; previously unrecorded statistics show — until you finish a new run. Military badges use your overall global score position: Recruit is unranked, Private is the lowest posted grade, and the #1 player is Field Marshal. Open the rank ladder for every grade. Share Score uses your last completed run; Share Rank uses your personal records.</p>
       <h3 class="helpSectionTitle">Controls</h3>
       <div class="helpControls">
-        <div class="helpControl"><strong>Move</strong>A / D or ← / →. On touch, drag the soldier.</div>
-        <div class="helpControl"><strong>Fire</strong>Hold Space, mouse or touch to keep firing. Machine-gun audio follows the standard, upgraded or rapid-fire cadence; sniper mode uses its own recorded rifle report.</div>
+        <div class="helpControl"><strong>Move</strong>A / D or ← / →. On touch, hold the left or right thumb button. You can also drag the soldier to move and fire together.</div>
+        <div class="helpControl"><strong>Fire</strong>Hold FIRE with your other thumb, Space, or the mouse to keep firing. Movement, fire and support weapons work together. Machine-gun audio follows the standard, upgraded or rapid-fire cadence; sniper mode uses its own recorded rifle report.</div>
         <div class="helpControl"><strong>Collect</strong>Move beneath floating supply buoys.</div>
         <div class="helpControl"><strong>Deploy</strong>Tap a stored weapon or press 1, 2 or 3.</div>
         <div class="helpControl"><strong>Dash</strong>Shift or DASH gives a quick burst. One leg allows a smaller hop boost; crawling disables dash.</div>
@@ -641,7 +647,7 @@
         <div class="powerKeyItem"><span class="powerBadge clusterBadge">M</span><span><strong>Mortar Volley</strong>Stored. Press 2 to launch five arcing shells from the beach towards approaching boats.</span></div>
         <div class="powerKeyItem"><span class="powerBadge airstrikeBadge">A</span><span><strong>Air Strike</strong>Stored. Press 3 for a radio call, then a fighter jet drops up to eight bombs across the sea. One pass at a time.</span></div>
       </div>
-     </div>
+    </div>
   </div>
 </section>
 
@@ -1070,6 +1076,7 @@ const Leaderboard = (function(){
   const callsignInput=document.getElementById('callsignInput');
   const submitBtn=document.getElementById('submitScoreBtn');
   const statusEl=document.getElementById('leaderboardStatus');
+  const saveStatusEl=document.getElementById('leaderboardSaveStatus');
   const listEl=document.getElementById('leaderboardList');
   const personalBestEl=document.getElementById('personalBestVal');
   const hudBestEl=document.getElementById('hudBestVal');
@@ -1086,20 +1093,25 @@ const Leaderboard = (function(){
   const keys={
     best:'stop-the-boats:personal-best',bestWave:'stop-the-boats:personal-best-wave',
     records:'stop-the-boats:personal-records-v2',callsign:'stop-the-boats:callsign',
-    playerId:'stop-the-boats:player-id'
+    playerId:'stop-the-boats:player-id',pending:'stop-the-boats:leaderboard-pending'
   };
   let selectedMetric='score',lastFocused=null,requestSerial=0,boardOpenTimer=0;
   let currentRunScore=0,currentRunWave=1,completedRun=false,lastRun=null;
   let serverPlayer=null,acknowledged=null,transmitting=false,pendingAutomatic=false;
   let serverRankKnown=false;
+  let sessionPlayerId=null,storageWorking=true,retryTimer=0,retryAttempts=0,blockedCallsign='',writeRevision=0;
+  let sessionCallsign=cleanCallsign(storageGet(keys.callsign));
   function storageGet(key){try{return localStorage.getItem(key);}catch(_){return null;}}
-  function storageSet(key,value){try{localStorage.setItem(key,value);}catch(_){}}
+  function storageSet(key,value){try{localStorage.setItem(key,value);}catch(_){storageWorking=false;}}
+  function storageRemove(key){try{localStorage.removeItem(key);}catch(_){storageWorking=false;}}
   function cleanCallsign(value){
     return String(value||'').normalize('NFKC').toUpperCase().replace(/[^A-Z0-9 _-]/g,'').replace(/\s+/g,' ').trim().slice(0,16);
   }
   function displayCallsign(value){
     return String(value||'').normalize('NFKC').toUpperCase().replace(/[^A-Z0-9 _~-]/g,'').replace(/\s+/g,' ').trim().slice(0,20);
   }
+  function savedCallsignValue(){return cleanCallsign(storageWorking?storageGet(keys.callsign):sessionCallsign);}
+  function saveCallsign(value){sessionCallsign=value;storageSet(keys.callsign,value);}
   function cleanValue(value){
     if(value===null||value===undefined)return null;
     const n=Number(value);
@@ -1129,21 +1141,68 @@ const Leaderboard = (function(){
   }
   function getPersonalBest(){return bests.score;}
   function getPlayerId(){
+    if(sessionPlayerId)return sessionPlayerId;
     const stored=storageGet(keys.playerId);
-    if(stored&&/^[A-Za-z0-9_-]{16,64}$/.test(stored))return stored;
+    if(stored&&/^[A-Za-z0-9_-]{16,64}$/.test(stored))return sessionPlayerId=stored;
     const generated=self.crypto&&typeof self.crypto.randomUUID==='function'?self.crypto.randomUUID():'player-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,14);
-    storageSet(keys.playerId,generated);return generated;
+    sessionPlayerId=generated;storageSet(keys.playerId,generated);return sessionPlayerId;
   }
   function setStatus(message,tone){statusEl.textContent=message;statusEl.className=tone||'';}
+  function setSaveStatus(message,tone){saveStatusEl.textContent=message;saveStatusEl.className=tone||'';}
+  function localSaveMessage(){return storageWorking?'Personal bests saved on this device.':'Personal bests are kept in this tab; browser storage is unavailable.';}
+  function markPending(){storageSet(keys.pending,'1');}
+  function confirmCurrentRecords(){
+    const savedCallsign=savedCallsignValue();
+    if(covers(acknowledged)&&savedCallsign&&cleanCallsign(acknowledged.callsign)===savedCallsign){
+      storageRemove(keys.pending);retryAttempts=0;clearTimeout(retryTimer);retryTimer=0;
+      setSaveStatus('All personal bests are confirmed saved on the global leaderboard.','success');
+      return true;
+    }
+    return false;
+  }
+  async function requestBoard(url,options={}){
+    const controller=typeof AbortController==='function'?new AbortController():null;
+    let timer;
+    try{
+      return await Promise.race([
+        (async()=>{
+          const response=await fetch(url,{...options,...(controller?{signal:controller.signal}:{})});
+          let data;try{data=await response.json();}catch(_){throw new Error('The server returned an invalid leaderboard response.');}
+          if(!response.ok){
+            const error=new Error(data.error||'Leaderboard unavailable');
+            error.status=response.status;error.retryable=response.status>=500||response.status===429;
+            throw error;
+          }
+          return {response,data};
+        })(),
+        new Promise((_,reject)=>{timer=setTimeout(()=>{
+          const error=new Error('Leaderboard connection timed out.');error.retryable=true;
+          reject(error);controller?.abort();
+        },12000);})
+      ]);
+    }finally{clearTimeout(timer);}
+  }
+  function retrySavedRecords(resetBudget=false){
+    if(resetBudget){retryAttempts=0;clearTimeout(retryTimer);retryTimer=0;}
+    const callsign=savedCallsignValue();
+    if(!callsign||callsign===blockedCallsign||!needsSubmission(callsign)||location.protocol==='file:')return;
+    if(navigator.onLine===false){setSaveStatus(localSaveMessage()+' Waiting for a connection to upload.','error');return;}
+    transmitScore(callsign,true);
+  }
+  function scheduleRetry(){
+    if(retryTimer||retryAttempts>=3||navigator.onLine===false||document.hidden)return;
+    const delay=[3000,10000,30000][retryAttempts++];
+    retryTimer=setTimeout(()=>{retryTimer=0;retrySavedRecords();},delay);
+  }
   function addCell(row,className,value){
     const cell=document.createElement('span');cell.className=className;cell.textContent=value;row.appendChild(cell);return cell;
   }
   function hasRecords(record=bests){return metrics.some(metric=>(cleanValue(record[metric.key])||0)>0);}
   function covers(record,expected=bests){
-    return !!record&&metrics.every(metric=>expected[metric.key]===null||Number(record[metric.key])>=expected[metric.key]&&record[metric.key]!==null&&record[metric.key]!==undefined);
+    return !!record&&metrics.every(metric=>expected[metric.key]===null||Number.isSafeInteger(record[metric.key])&&record[metric.key]>=expected[metric.key]);
   }
-  function needsSubmission(){
-    return hasRecords()&&(!covers(acknowledged)||cleanCallsign(callsignInput.value)!==cleanCallsign(acknowledged.callsign));
+  function needsSubmission(callsign=callsignInput.value){
+    return hasRecords()&&(!covers(acknowledged)||cleanCallsign(callsign)!==cleanCallsign(acknowledged.callsign));
   }
   function updateSubmitState(){
     const eligible=needsSubmission();
@@ -1211,15 +1270,18 @@ const Leaderboard = (function(){
     listEl.appendChild(fragment);
   }
   async function fetchTopScores(showLoading){
-    const serial=++requestSerial,metric=selectedMetric;
+    const serial=++requestSerial,metric=selectedMetric,revision=writeRevision;
     if(showLoading)setStatus('Loading '+metrics.find(item=>item.key===metric).label.toLowerCase()+' rankings…');
     try{
       if(location.protocol==='file:')throw new Error('Open the game through npm run dev to use the leaderboard. Personal bests remain saved on this device.');
-      const response=await fetch(endpoint+'?metric='+encodeURIComponent(metric)+'&playerId='+encodeURIComponent(getPlayerId()),{cache:'no-store'});
-      const data=await response.json().catch(()=>({}));
-      if(!response.ok)throw new Error(data.error||'Leaderboard unavailable');
+      const {data}=await requestBoard(endpoint+'?metric='+encodeURIComponent(metric)+'&playerId='+encodeURIComponent(getPlayerId()),{cache:'no-store'});
+      if(!data||!Array.isArray(data.entries)||!Object.prototype.hasOwnProperty.call(data,'player'))throw new Error('The server returned an invalid leaderboard response.');
       if(serial!==requestSerial||metric!==selectedMetric)return;
-      if(data.player)mergeServerPlayer(data.player);else{serverPlayer=null;acknowledged=null;serverRankKnown=true;renderPersonal();}
+      // A GET that started before a write must never erase that write's ack.
+      if(!transmitting&&revision===writeRevision){
+        if(data.player)mergeServerPlayer(data.player);else{serverPlayer=null;acknowledged=null;serverRankKnown=true;renderPersonal();}
+        confirmCurrentRecords();
+      }
       renderEntries(data.entries);
       const count=Array.isArray(data.entries)?data.entries.length:0;
       setStatus(count?count+' ranked · each column stores your best result across all runs.':'No records yet · previous scores are kept; new statistics are recorded from this update.');
@@ -1238,10 +1300,10 @@ const Leaderboard = (function(){
     lastFocused=document.activeElement;actionsEl.hidden=!completedRun;
     modal.classList.add('open');modal.setAttribute('aria-hidden','false');
     window.dispatchEvent(new CustomEvent('gameboardvisibility',{detail:{open:true}}));
-    renderPersonal();fetchTopScores(true);
+    renderPersonal();fetchTopScores(true).finally(()=>retrySavedRecords(true));
     requestAnimationFrame(()=>{
       if(!modal.classList.contains('open'))return;
-      if(completedRun&&hasRecords()&&!cleanCallsign(storageGet(keys.callsign))){callsignInput.focus({preventScroll:true});callsignInput.select();}
+      if(completedRun&&hasRecords()&&!savedCallsignValue()){callsignInput.focus({preventScroll:true});callsignInput.select();}
       else closeBtn.focus({preventScroll:true});
     });
   }
@@ -1266,45 +1328,55 @@ const Leaderboard = (function(){
     });
     persistRecords();renderPersonal();
     runResultEl.textContent=(currentRunScore>previousBest?'New score record':'Last run')+' · wave '+String(currentRunWave).padStart(2,'0');
-    const savedCallsign=cleanCallsign(storageGet(keys.callsign));
-    if(savedCallsign&&needsSubmission())transmitScore(savedCallsign,true);
+    const savedCallsign=savedCallsignValue();
+    if(needsSubmission(savedCallsign)){
+      markPending();setSaveStatus(localSaveMessage()+(savedCallsign?' Upload pending.':' Choose a callsign to add them to the global leaderboard.'));
+      if(savedCallsign)transmitScore(savedCallsign,true);
+    }
     clearTimeout(boardOpenTimer);if(autoOpen)boardOpenTimer=setTimeout(open,620);
     return bests.score;
   }
   async function transmitScore(requestedCallsign,automatic){
-    if(location.protocol==='file:'){if(!automatic)setStatus('Use the hosted game to submit. Your personal bests remain saved on this device.','error');return false;}
+    if(location.protocol==='file:'){setSaveStatus('Use the hosted game to submit. '+localSaveMessage(),'error');return false;}
     if(transmitting){if(automatic)pendingAutomatic=true;return false;}
     if(!hasRecords())return false;
     const callsign=cleanCallsign(requestedCallsign);
-    if(!callsign){setStatus('Enter a callsign before transmitting.','error');if(!automatic)callsignInput.focus();return false;}
-    callsignInput.value=callsign;storageSet(keys.callsign,callsign);
+    if(!callsign){setSaveStatus('Choose a callsign to save your records to the global leaderboard.','error');if(!automatic)callsignInput.focus();return false;}
+    if(automatic&&callsign===blockedCallsign)return false;
+    if(!automatic){blockedCallsign='';retryAttempts=0;}
+    clearTimeout(retryTimer);retryTimer=0;
+    callsignInput.value=callsign;saveCallsign(callsign);markPending();
+    if(navigator.onLine===false){setSaveStatus(localSaveMessage()+' Waiting for a connection to upload.','error');return false;}
     const metric=selectedMetric,serial=++requestSerial;
     const payload={playerId:getPlayerId(),callsign,...bests,metric};
-    transmitting=true;updateSubmitState();setStatus('Sending all personal records to the global board…');
+    transmitting=true;writeRevision++;updateSubmitState();setSaveStatus('Saving your personal bests to the global leaderboard…');
     let accepted=false;
     try{
-      const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-      const data=await response.json().catch(()=>({}));
-      if(!response.ok){if(response.status===409&&!automatic){callsignInput.focus();callsignInput.select();}throw new Error(data.error||'Record transmission failed');}
-      accepted=true;
-      if(data.player)mergeServerPlayer(data.player);
-      else{
-        acknowledged={...payload};
-        if(metric==='score'&&data.rank)serverPlayer={...payload,scoreRank:data.rank,positions:{score:data.rank}};
-        serverRankKnown=true;renderPersonal();
+      const {data}=await requestBoard(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      if(data?.accepted!==true||!data.player||!covers(data.player,payload)||cleanCallsign(data.player.callsign)!==callsign||!Array.isArray(data.entries)){
+        throw new Error('The server did not confirm your records. They remain queued for upload.');
       }
+      accepted=true;writeRevision++;blockedCallsign='';retryAttempts=0;
+      mergeServerPlayer(data.player);
+      if(!confirmCurrentRecords())setSaveStatus(localSaveMessage()+' Newer records are waiting to upload.');
       if(serial===requestSerial&&metric===selectedMetric){
         renderEntries(data.entries);
-        setStatus(data.rank?'Records accepted — '+metrics.find(item=>item.key===metric).label.toLowerCase()+' position #'+data.rank+'.':'Records accepted. Your personal bests are saved even outside the Top 100.','success');
+        setStatus(data.rank?metrics.find(item=>item.key===metric).label+' position #'+data.rank+'.':'Saved records can rank outside the Top 100.','success');
       }else fetchTopScores(false);
       return true;
     }catch(error){
-      if(serial===requestSerial)setStatus(error&&error.message?error.message:'Record transmission failed.','error');
+      markPending();
+      if(error.status>=400&&error.status<500&&error.status!==429){
+        blockedCallsign=callsign;
+        if(error.status===409&&modal.classList.contains('open')){callsignInput.focus({preventScroll:true});callsignInput.select();}
+      }else if(error.retryable!==false)scheduleRetry();
+      setSaveStatus(localSaveMessage()+' '+(error&&error.message?error.message:'Upload failed.')+(blockedCallsign===callsign?' Change your callsign or retry manually.':' Upload pending; retries also run when you reconnect or reopen rankings.'),'error');
       return false;
     }finally{
       transmitting=false;updateSubmitState();
       const retry=pendingAutomatic;pendingAutomatic=false;
-      if(accepted&&retry&&needsSubmission())transmitScore(cleanCallsign(storageGet(keys.callsign)),true);
+      const latestCallsign=savedCallsignValue();
+      if(retry&&latestCallsign&&latestCallsign!==blockedCallsign&&(accepted||latestCallsign!==callsign)&&needsSubmission(latestCallsign))transmitScore(latestCallsign,true);
     }
   }
   function getShareSnapshot(mode){
@@ -1332,7 +1404,17 @@ const Leaderboard = (function(){
   });
   callsignInput.addEventListener('input',updateSubmitState);
   callsignInput.addEventListener('change',()=>{
-    callsignInput.value=cleanCallsign(callsignInput.value)||'PLAYER';storageSet(keys.callsign,callsignInput.value);updateSubmitState();
+    const callsign=cleanCallsign(callsignInput.value);
+    callsignInput.value=callsign;saveCallsign(callsign);updateSubmitState();
+    if(callsign!==blockedCallsign)blockedCallsign='';
+    if(!callsign){setSaveStatus('Choose a callsign once to save completed runs automatically.');return;}
+    if(hasRecords()&&needsSubmission(callsign)){markPending();retrySavedRecords(true);}
+    else if(!hasRecords())setSaveStatus('Callsign saved. Your completed runs will upload automatically.');
+  });
+  window.addEventListener('online',()=>retrySavedRecords(true));
+  document.addEventListener('visibilitychange',()=>{
+    if(!document.hidden)retrySavedRecords(true);
+    else{clearTimeout(retryTimer);retryTimer=0;}
   });
   metrics.forEach((item,index)=>{
     const button=document.getElementById('boardMetric-'+item.key);
@@ -1358,10 +1440,11 @@ const Leaderboard = (function(){
     const range=document.createElement('small');range.textContent=grade.range;
     row.appendChild(badge);row.appendChild(label);row.appendChild(range);ladder.appendChild(row);
   });
-  const savedCallsign=cleanCallsign(storageGet(keys.callsign));
-  callsignInput.value=savedCallsign||'PLAYER';renderPersonal();
+  const savedCallsign=savedCallsignValue();
+  callsignInput.value=savedCallsign;renderPersonal();
+  if(hasRecords())setSaveStatus(localSaveMessage()+(savedCallsign?' Checking global save status…':' Choose a callsign to upload them.'));
   fetchTopScores(false).finally(()=>{
-    if(savedCallsign&&needsSubmission())transmitScore(savedCallsign,true);
+    retrySavedRecords(true);
   });
   return {open,close,startRun,finishRun,selectMetric,getShareSnapshot,getRecords:()=>({...bests}),formatMetric};
 })();
@@ -1753,7 +1836,9 @@ document.getElementById('menuScoresBtn').addEventListener('click',()=>Leaderboar
   const hardwareThreads = navigator.hardwareConcurrency || 4;
   const deviceMemory = navigator.deviceMemory || 4;
   const lowSpecDevice = hardwareThreads <= 4 || deviceMemory <= 4;
-  let qualityLevel = lowSpecDevice ? 1 : 2; // 0 economy, 1 balanced, 2 cinematic
+  const touchHardware = (navigator.maxTouchPoints || 0) > 0 || !!window.matchMedia?.('(any-pointer: coarse)').matches;
+  const constrainedDevice = lowSpecDevice || touchHardware;
+  let qualityLevel = constrainedDevice ? 1 : 2; // 0 economy, 1 balanced, 2 cinematic
   let W, H, SHORE_Y, HORIZON_Y, DPR = 1;
   // A 1.8 m soldier anchors the shoreline scale. The water plane is slightly
   // foreshortened; compact viewports zoom the whole scene out, not just boats.
@@ -1874,12 +1959,17 @@ document.getElementById('menuScoresBtn').addEventListener('click',()=>Leaderboar
   }
 
   function resize(){
-    W = Math.round(Math.min(window.innerWidth, 1120));
-    H = Math.round(window.innerHeight);
+    const previous = {w:W,h:H,shore:SHORE_Y,horizon:HORIZON_Y,scale:worldScale};
+    // Only use the visual viewport at normal zoom. Pinch zoom must not change
+    // the simulation; browser chrome and the keyboard may change its height.
+    const viewport=window.visualViewport;
+    const normalZoom=!viewport||Math.abs((viewport.scale||1)-1)<.01;
+    W = Math.max(1,Math.round(Math.min(window.innerWidth,1120)));
+    H = Math.max(1,Math.round(normalZoom&&viewport?Math.min(window.innerHeight,viewport.height):window.innerHeight));
     const nativeDpr = window.devicePixelRatio || 1;
-    const pixelBudget = lowSpecDevice ? 1000000 : 1550000;
+    const pixelBudget = qualityLevel===0?650000:constrainedDevice?1000000:1550000;
     const budgetScale = Math.sqrt(pixelBudget / Math.max(1, W * H));
-    const deviceCap = lowSpecDevice ? 1.15 : 1.5;
+    const deviceCap = qualityLevel===0?1:constrainedDevice?1.15:1.5;
     DPR = Math.max(.72, Math.min(nativeDpr, deviceCap, budgetScale));
     DPR = Math.round(DPR * 100) / 100;
     canvas.width = Math.round(W * DPR);
@@ -1889,14 +1979,18 @@ document.getElementById('menuScoresBtn').addEventListener('click',()=>Leaderboar
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = qualityLevel === 0 ? 'medium' : 'high';
-    SHORE_Y = H - Math.max(150, Math.min(194, H * 0.225));
-    HORIZON_Y = Math.round(Math.min(SHORE_Y*.38, Math.max(85, Math.min(175,H*.19))));
+    const mobile=touchHardware||document.body.classList.contains('touch-input');
+    const compact=mobile&&W>=480&&H<=600;
+    const css=typeof getComputedStyle==='function'?getComputedStyle(document.body):null;
+    const safeBottom=parseFloat(css?.getPropertyValue('--safe-bottom'))||0;
+    const safeTop=parseFloat(css?.getPropertyValue('--safe-top'))||0;
+    // Keep the soldier's full body above the upper row of the touch deck.
+    const shoreReserve=mobile?(compact?148:244)+safeBottom:Math.max(150,Math.min(194,H*.225));
+    SHORE_Y=Math.max(H*.42,H-shoreReserve);
+    const hudFloor=mobile?(compact?62:116)+safeTop:85;
+    HORIZON_Y=Math.round(Math.min(SHORE_Y-50,Math.max(hudFloor,Math.min(175,H*.19))));
+    HORIZON_Y=Math.max(24,HORIZON_Y);
     worldScale=Math.min(1,Math.max(.05,(SHORE_Y-HORIZON_Y-18)/(14*SOLDIER_HEIGHT/SOLDIER_METRES*WATER_FORESHORTENING)));
-    if(playerReady){
-      const cx=player.x+player.w/2;
-      player.w=30*worldScale;player.h=SOLDIER_HEIGHT*worldScale;
-      player.x=Math.max(0,Math.min(W-player.w,cx-player.w/2));
-    }
 
     // Stable natural coastline, rock field, sand texture and directional glints.
     cliffJagged = [];
@@ -1907,6 +2001,9 @@ document.getElementById('menuScoresBtn').addEventListener('click',()=>Leaderboar
         Math.sin(i * 0.13 + 1.8) * 9 +
         (hash(i + 40) - 0.5) * 5
       );
+    }
+    if(playerReady&&(W!==previous.w||H!==previous.h||SHORE_Y!==previous.shore||HORIZON_Y!==previous.horizon)){
+      remapWorld(previous);
     }
     const glintDivisor = qualityLevel === 2 ? 9 : qualityLevel === 1 ? 13 : 18;
     const grassDivisor = qualityLevel === 2 ? 7 : qualityLevel === 1 ? 10 : 14;
@@ -1943,11 +2040,54 @@ document.getElementById('menuScoresBtn').addEventListener('click',()=>Leaderboar
     vignetteGradient.addColorStop(.7,'rgba(0,5,8,.06)');
     vignetteGradient.addColorStop(1,'rgba(0,3,6,.5)');
   }
+  function remapWorld(previous){
+    const sx=W/Math.max(1,previous.w);
+    const seaScale=(SHORE_Y-HORIZON_Y)/Math.max(1,previous.shore-previous.horizon);
+    const landScale=(H-SHORE_Y)/Math.max(1,previous.h-previous.shore);
+    const mapY=y=>y<previous.horizon?y*HORIZON_Y/Math.max(1,previous.horizon):
+      y<=previous.shore?HORIZON_Y+(y-previous.horizon)*seaScale:SHORE_Y+(y-previous.shore)*landScale;
+    const mapObject=item=>{
+      const oldY=item.y;
+      for(const key of ['x','px','prevX','originX','startX','targetX','aimX'])if(Number.isFinite(item[key]))item[key]*=sx;
+      for(const key of ['y','py','prevY','originY','startY','targetY','aimY'])if(Number.isFinite(item[key]))item[key]=mapY(item[key]);
+      if(Number.isFinite(item.vx))item.vx*=sx;
+      if(Number.isFinite(item.vy))item.vy*=oldY>previous.shore?landScale:seaScale;
+    };
+    const centre=(player.x+player.w/2)*sx;
+    player.w=30*worldScale;player.h=SOLDIER_HEIGHT*worldScale;
+    player.x=Math.max(0,Math.min(W-player.w,centre-player.w/2));
+    player.y=shoreAt(player.x+player.w/2)+56*worldScale-player.h;
+    for(const list of [bullets,hostileShots,powerups,particles,mines,scheduledBlasts,explosionsFx,waterRipples,oilSlicks,wrecks,floatingPassengers,bloodSprays,floatingText,mortarEmplacements,illuminationFlares]){
+      list.forEach(mapObject);
+    }
+    const sizeScale=worldScale/Math.max(.05,previous.scale);
+    floatingPassengers.forEach(passenger=>passenger.size*=sizeScale);
+    wrecks.forEach(wreck=>{wreck.w*=sizeScale;wreck.h*=sizeScale;});
+    oilSlicks.forEach(slick=>slick.size*=sizeScale);
+    enemies.forEach(enemy=>{
+      mapObject(enemy);
+      if(enemy.baseType)positionApproachingBoat(enemy);
+      enemy.prevX=enemy.x;enemy.prevY=enemy.y;
+      enemy.trail?.forEach(mapObject);
+    });
+    if(airstrikeRun){airstrikeRun.payload.forEach(mapObject);airstrikeRun.prevX=airstrikeJetPosition(airstrikeRun).x;}
+    sniper.x=Math.max(0,Math.min(W,sniper.x*sx));
+    sniper.y=Math.max(HORIZON_Y+2,Math.min(SHORE_Y+15,mapY(sniper.y)));
+    // Rotation can cancel touches without delivering pointerup. Never leave
+    // a held movement/fire action active after the battlefield changes shape.
+    clearInput();
+    if(started&&!gameOver&&!paused&&(previous.w>previous.h)!==(W>H)){
+      paused=true;document.getElementById('pausePanel').style.display='flex';syncPause();
+    }
+  }
   let resizeTimer = 0;
-  window.addEventListener('resize', () => {
+  function scheduleResize(){
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(resize, 120);
-  });
+  }
+  window.addEventListener('resize',scheduleResize);
+  window.visualViewport?.addEventListener('resize',scheduleResize);
+  window.addEventListener('orientationchange',scheduleResize);
   resize();
 
   // ---------- Game state ----------
@@ -2068,9 +2208,89 @@ document.getElementById('menuScoresBtn').addEventListener('click',()=>Leaderboar
   });
   window.addEventListener('keyup', e => keys[e.key] = false);
 
-  // touch / mouse drag
+  // Every finger owns its own control. Releasing a support button must not
+  // release another finger that is still moving or firing.
   let dragging = false;
-  function clearInput(){ dragging=false; player.targetX=null; Object.keys(keys).forEach(key=>keys[key]=false); }
+  let canvasPointerId = null, sniperTouchPoint = null;
+  const controlPointers = new Map();
+  const touchHeld = {left:false,right:false,fire:false};
+  const mobileControls = document.getElementById('mobileControls');
+  const touchButtons = {
+    left:document.getElementById('moveLeftBtn'),
+    right:document.getElementById('moveRightBtn'),
+    fire:document.getElementById('fireBtn')
+  };
+  let touchInputActive = touchHardware;
+  function enableTouchInput(){
+    const newlyEnabled=!touchInputActive;
+    touchInputActive=true;
+    document.body.classList.add('touch-input');
+    document.documentElement.classList.add('touch-device');
+    if(newlyEnabled)scheduleResize();
+  }
+  if(touchInputActive)enableTouchInput();
+  window.addEventListener('pointerdown',event=>{
+    if(event.pointerType==='touch'||event.pointerType==='pen')enableTouchInput();
+  },{passive:true});
+  function syncTouchControls(){
+    mobileControls.classList.toggle('playing',running);
+    mobileControls.setAttribute('aria-hidden',String(!running));
+    Object.entries(touchButtons).forEach(([action,button])=>{
+      button.disabled=!running;
+      button.classList.toggle('pressed',touchHeld[action]);
+    });
+  }
+  function refreshTouchHeld(){
+    Object.keys(touchHeld).forEach(action=>touchHeld[action]=false);
+    controlPointers.forEach(action=>touchHeld[action]=true);
+    syncTouchControls();
+  }
+  function clearInput(){
+    dragging=false;canvasPointerId=null;sniperTouchPoint=null;player.targetX=null;
+    controlPointers.clear();
+    Object.keys(keys).forEach(key=>keys[key]=false);
+    refreshTouchHeld();
+  }
+  function capturePointer(target,event){
+    if(target.setPointerCapture&&event.pointerId!=null){
+      try{target.setPointerCapture(event.pointerId);}catch(_){/* A cancelled gesture has no capture. */}
+    }
+  }
+  function releaseControl(event){
+    const id=event.pointerId;
+    if(controlPointers.delete(id))refreshTouchHeld();
+    if(id===canvasPointerId||id==null){
+      canvasPointerId=null;sniperTouchPoint=null;dragging=false;player.targetX=null;
+    }
+  }
+  Object.entries(touchButtons).forEach(([action,button])=>{
+    button.addEventListener('pointerdown',event=>{
+      if(!running||(event.pointerType==='mouse'&&event.button!==0))return;
+      event.preventDefault();
+      if(event.pointerType!=='mouse')enableTouchInput();
+      controlPointers.set(event.pointerId,action);
+      if(action!=='fire')player.targetX=null;
+      capturePointer(button,event);refreshTouchHeld();
+      if(action==='fire'){if(sniper.active)fireSniper();else fireBullet();}
+    });
+    button.addEventListener('lostpointercapture',releaseControl);
+    button.addEventListener('contextmenu',event=>event.preventDefault());
+    button.addEventListener('keydown',event=>{
+      if(event.key!==' '&&event.key!=='Enter')return;
+      event.preventDefault();event.stopPropagation();
+      if(!running)return;
+      controlPointers.set('key-'+action,action);refreshTouchHeld();
+      if(action==='fire'&&!event.repeat){if(sniper.active)fireSniper();else fireBullet();}
+    });
+    button.addEventListener('keyup',event=>{
+      if(event.key!==' '&&event.key!=='Enter')return;
+      event.preventDefault();event.stopPropagation();
+      controlPointers.delete('key-'+action);refreshTouchHeld();
+    });
+    button.addEventListener('blur',()=>{
+      controlPointers.delete('key-'+action);refreshTouchHeld();
+    });
+  });
   function syncGameMusic(){
     if(BreachClip.isOpen()){MusicEngine.stop();return;}
     const inBattle=started&&!gameOver&&!modalPauses.has('gameboardvisibility');
@@ -2106,20 +2326,43 @@ document.getElementById('menuScoresBtn').addEventListener('click',()=>Leaderboar
     cameraShake=Math.max(cameraShake,1.5);
   }
   canvas.addEventListener('pointerdown', e => {
-    if(!running) return;
+    if(!running||(e.pointerType==='mouse'&&e.button!==0)) return;
+    if(canvasPointerId!==null)return;
+    e.preventDefault();
     if (placingMine) {
       placeMineFromEvent(e);
       return;
     }
-    if(sniper.active){e.preventDefault();aimSniper(e);fireSniper();return;}
+    canvasPointerId=e.pointerId;
+    capturePointer(canvas,e);
+    if(sniper.active){
+      if(e.pointerType==='touch'||e.pointerType==='pen'){
+        // Move the 4x view with a fine relative drag; FIRE is independent so
+        // aiming never discharges a round or hides the target under a finger.
+        sniperTouchPoint={x:e.clientX,y:e.clientY};
+      }else{aimSniper(e);fireSniper();}
+      return;
+    }
     dragging = true;
-    if(canvas.setPointerCapture) canvas.setPointerCapture(e.pointerId);
     movePlayerTo(e);
     fireBullet();
   });
-  canvas.addEventListener('pointermove', e => { if(sniper.active&&running)aimSniper(e);else if (dragging) movePlayerTo(e); });
-  window.addEventListener('pointerup', () => { dragging = false; player.targetX = null; });
-  window.addEventListener('pointercancel',clearInput);
+  canvas.addEventListener('pointermove', e => {
+    if(!running)return;
+    if(sniper.active){
+      if(e.pointerType==='touch'||e.pointerType==='pen'){
+        if(e.pointerId!==canvasPointerId||!sniperTouchPoint)return;
+        const rect=canvas.getBoundingClientRect();
+        sniper.x=Math.max(0,Math.min(W,sniper.x+(e.clientX-sniperTouchPoint.x)*W/Math.max(1,rect.width)/4));
+        sniper.y=Math.max(HORIZON_Y+2,Math.min(SHORE_Y+15,sniper.y+(e.clientY-sniperTouchPoint.y)*H/Math.max(1,rect.height)/4));
+        sniperTouchPoint={x:e.clientX,y:e.clientY};
+      }else{aimSniper(e);}
+    }else if(dragging&&e.pointerId===canvasPointerId)movePlayerTo(e);
+  });
+  window.addEventListener('pointerup',releaseControl);
+  window.addEventListener('pointercancel',releaseControl);
+  canvas.addEventListener('lostpointercapture',releaseControl);
+  canvas.addEventListener('contextmenu',event=>event.preventDefault());
   function movePlayerTo(e){
     const rect = canvas.getBoundingClientRect();
     const nextX=((e.clientX - rect.left) / rect.width) * W - player.w/2;
@@ -2133,10 +2376,10 @@ document.getElementById('menuScoresBtn').addEventListener('click',()=>Leaderboar
     if(count.textContent!==value){count.textContent=value;document.getElementById('headshotHud').setAttribute('aria-label',value+' headshot'+(sniper.headshots===1?'':'s'));}
     const button=document.getElementById('sniperBtn');
     button.classList.toggle('active',sniper.active);button.setAttribute('aria-pressed',String(sniper.active));
-    button.textContent=sniper.active?'RIFLE · E':'SNIPER · E';
+    button.textContent=sniper.active?(touchInputActive?'RIFLE':'RIFLE · E'):(touchInputActive?'SNIPER':'SNIPER · E');
     canvas.style.cursor=sniper.active?'none':'default';
     const status=document.getElementById('sniperStatus');
-    const label=sniper.active?'4× HD SNIPER · '+(sniper.cooldown>0?'RELOAD '+(Math.ceil(sniper.cooldown/6)/10).toFixed(1)+'s':'CLICK / SPACE')+' · '+sniper.headshots+' HEADSHOTS':'';
+    const label=sniper.active?'4× HD SNIPER · '+(sniper.cooldown>0?'RELOAD '+(Math.ceil(sniper.cooldown/6)/10).toFixed(1)+'s':touchInputActive?'DRAG TO AIM · HOLD FIRE':'CLICK / SPACE')+' · '+sniper.headshots+' HEADSHOTS':'';
     if(status.textContent!==label)status.textContent=label;
   }
   function toggleSniper(){
@@ -2647,7 +2890,7 @@ document.getElementById('menuScoresBtn').addEventListener('click',()=>Leaderboar
     const text=label+(combo>=3?'  /  CHAIN '+combo+' · ×'+(1+Math.min(5,Math.floor(combo/3))*.1).toFixed(1):'');
     if(status.textContent!==text)status.textContent=text;
     const dashButton=document.getElementById('dashBtn');
-    const dashText=player.lives<=1?'CRAWLING':player.dashCooldown>0?'DASH '+Math.ceil(player.dashCooldown/60)+'s':player.lives===2?'HOP BOOST · SHIFT':'DASH · SHIFT';
+    const dashText=player.lives<=1?'CRAWLING':player.dashCooldown>0?'DASH '+Math.ceil(player.dashCooldown/60)+'s':(player.lives===2?'HOP BOOST':'DASH')+(touchInputActive?'':' · SHIFT');
     if(dashButton.textContent!==dashText)dashButton.textContent=dashText;
     dashButton.disabled=player.dashCooldown>0||player.lives<=1;
   }
@@ -2912,8 +3155,8 @@ document.getElementById('menuScoresBtn').addEventListener('click',()=>Leaderboar
     // player movement
     const previousPlayerX=player.x,previousFacing=player.facing;
     let moveDir = 0;
-    if (keys['ArrowLeft'] || keys['a'] || keys['A']) { player.x -= moveSpeed; moveDir--; }
-    if (keys['ArrowRight'] || keys['d'] || keys['D']) { player.x += moveSpeed; moveDir++; }
+    if (keys['ArrowLeft'] || keys['a'] || keys['A'] || touchHeld.left) { player.x -= moveSpeed; moveDir--; }
+    if (keys['ArrowRight'] || keys['d'] || keys['D'] || touchHeld.right) { player.x += moveSpeed; moveDir++; }
     if(moveDir===0&&player.targetX!=null){
       const dx=player.targetX-player.x;
       if(Math.abs(dx)>.8){
@@ -2927,7 +3170,8 @@ document.getElementById('menuScoresBtn').addEventListener('click',()=>Leaderboar
     updatePlayerAnimation(player.x-previousPlayerX,previousFacing);
     player.y += (shoreAt(player.x + player.w/2) + 56*worldScale - player.h - player.y) * .12;
 
-    if (!sniper.active && (keys[' '] || dragging)) fireBullet();
+    if (!sniper.active && (keys[' '] || dragging || touchHeld.fire)) fireBullet();
+    if (sniper.active && touchHeld.fire) fireSniper();
     if (player.cooldown > 0) player.cooldown--;
     if (player.spread3Timer > 0) player.spread3Timer--;
     if (player.spread5Timer > 0) player.spread5Timer--;
@@ -4120,9 +4364,9 @@ document.getElementById('menuScoresBtn').addEventListener('click',()=>Leaderboar
   function updateFlareUI(){
     const button=document.getElementById('flareBtn');if(!button)return;
     const seconds=Math.ceil((flareSupply.rechargeTicks-flareSupply.recharge)/60);
-    const uiKey=flareSupply.charges+':'+seconds;
+    const uiKey=flareSupply.charges+':'+seconds+':'+touchInputActive;
     if(flareUIState===uiKey)return;flareUIState=uiKey;
-    const label='FLARE · F  '+flareSupply.charges+'/'+flareSupply.max;
+    const label=(touchInputActive?'FLARE  ':'FLARE · F  ')+flareSupply.charges+'/'+flareSupply.max;
     if(button.textContent!==label)button.textContent=label;
     button.classList.toggle('empty',flareSupply.charges===0);
     button.setAttribute('aria-label','Deploy illumination flare, '+flareSupply.charges+' available');
@@ -5385,10 +5629,11 @@ document.getElementById('menuScoresBtn').addEventListener('click',()=>Leaderboar
   let lastTick=0, accumulator=0, lastDraw=0;
   let slowFrames=0, fastFrames=0;
   const STEP=1000/60;
-  const maxQuality=lowSpecDevice?1:2;
+  const maxQuality=constrainedDevice?1:2;
 
   function tuneQuality(elapsed){
     if(elapsed<=0||elapsed>80)return;
+    const previousQuality=qualityLevel;
     if(elapsed>22){slowFrames++;fastFrames=0;}
     else if(elapsed<18){fastFrames++;slowFrames=Math.max(0,slowFrames-2);}
     else {slowFrames=Math.max(0,slowFrames-1);fastFrames=Math.max(0,fastFrames-1);}
@@ -5399,6 +5644,12 @@ document.getElementById('menuScoresBtn').addEventListener('click',()=>Leaderboar
       qualityLevel++;slowFrames=0;fastFrames=0;
       ctx.imageSmoothingQuality='high';
     }
+    if(previousQuality!==qualityLevel){
+      // Reallocate the backing store and rebuild cached scenery as well as
+      // reducing live effects. A quality change must not reset the operation.
+      document.body.classList.toggle('economy-graphics',qualityLevel===0);
+      resize();
+    }
   }
 
   function loop(now){
@@ -5406,7 +5657,9 @@ document.getElementById('menuScoresBtn').addEventListener('click',()=>Leaderboar
     if(BreachClip.isOpen()){lastTick=now;accumulator=0;requestAnimationFrame(loop);return;}
     if(!lastTick){lastTick=now;lastDraw=now-34;}
     const elapsed=Math.min(50,now-lastTick);
-    tuneQuality(elapsed);
+    // A paused scene is cheap to render; it is not evidence that the device
+    // can sustain a higher quality level during combat.
+    if(running)tuneQuality(elapsed);
     accumulator+=elapsed;
     lastTick=now;
     let safety=0;
@@ -5417,7 +5670,7 @@ document.getElementById('menuScoresBtn').addEventListener('click',()=>Leaderboar
     }
     // Discard an excessive backlog instead of entering a self-amplifying catch-up spiral.
     if(accumulator>=STEP)accumulator=0;
-    const drawInterval=running?(qualityLevel===0?30:15):32;
+    const drawInterval=running?(qualityLevel===0?30:15):started&&!gameOver?240:32;
     if(now-lastDraw>=drawInterval){
       renderAlpha=running?Math.max(0,Math.min(1,accumulator/STEP)):1;
       draw();lastDraw=now;
@@ -5431,6 +5684,7 @@ document.getElementById('menuScoresBtn').addEventListener('click',()=>Leaderboar
     BreachClip.prepare();
     started = true;
     running = true;
+    syncTouchControls();
     canvas.focus({preventScroll:true});
     MusicEngine.play('march');
     MusicEngine.setPaused(false);

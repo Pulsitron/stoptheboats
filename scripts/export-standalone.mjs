@@ -6,6 +6,9 @@ const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const destination=process.argv[2];
 if(!destination||!path.isAbsolute(destination))throw new Error('An absolute output HTML path is required');
 let html=fs.readFileSync(path.join(root,'public/game.html'),'utf8');
+// Keep the touch layout when exporting a genuinely self-contained HTML file.
+html=html.replace(/<link\s+rel="stylesheet"\s+href="\/?mobile\.css"\s*\/?\s*>/,
+  ()=>'<style>'+fs.readFileSync(path.join(root,'public/mobile.css'),'utf8')+'</style>');
 for(const [name,mime] of [['captain.mp4','video/mp4'],['captain-poster.jpg','image/jpeg'],['captain-end.jpg','image/jpeg'],['soldier.mp4','video/mp4'],['soldier-poster.jpg','image/jpeg'],['soldier-end.jpg','image/jpeg']]){
   const source='/media/'+name;
   if(!html.includes(source))throw new Error('Missing media reference: '+source);
