@@ -1,0 +1,374 @@
+[
+  {
+    "key": "rifle",
+    "author": "felix.blume",
+    "id": 709873,
+    "title": "Rifle gunshot, just one shot",
+    "recording": "Rifle recorded in California with Schoeps microphones and Sound Devices recorder.",
+    "page": "https://freesound.org/people/felix.blume/sounds/709873/",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "preview": "https://cdn.freesound.org/previews/709/709873_1661766-lq.mp3",
+    "processedFile": "sfx-rifle.mp3",
+    "sourceSelection": {
+      "start": 0.795,
+      "duration": 0.8
+    },
+    "gainDb": -6.58,
+    "processing": "Selected one event; removed leading dead air where needed; mono downmix, 28/35 Hz high-pass, short click-prevention fades, static gain normalization; MP3 encoding. No synthesized audio layers.",
+    "raw": {
+      "duration": 2.734308390022676,
+      "peakDbFS": -0.34848260377636026,
+      "hottest100msRmsDbFS": -16.176096222124574,
+      "rmsDbFS": -30.50812413293462,
+      "integratedLufs": -21.35,
+      "truePeakDbTP": -0.37
+    },
+    "processed": {
+      "duration": 0.8,
+      "peakDbFS": -7.530768969352294,
+      "hottest100msRmsDbFS": -23.241245276772176,
+      "rmsDbFS": -32.241109248601035,
+      "integratedLufs": -29.15,
+      "truePeakDbTP": -7.53
+    },
+    "bytes": 12113
+  },
+  {
+    "key": "mortar",
+    "author": "qubodup",
+    "id": 187542,
+    "title": "M-327 Mortar Shots.flac",
+    "recording": "M327 mortar training, excerpt from US government video.",
+    "page": "https://freesound.org/people/qubodup/sounds/187542/",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "preview": "https://cdn.freesound.org/previews/187/187542_71257-lq.mp3",
+    "processedFile": "sfx-mortar.mp3",
+    "sourceSelection": {
+      "start": 0,
+      "duration": 1.1
+    },
+    "gainDb": -18.40743636650094,
+    "processing": "Selected one event; removed leading dead air where needed; mono downmix, 28/35 Hz high-pass, short click-prevention fades, static gain normalization; MP3 encoding. No synthesized audio layers.",
+    "raw": {
+      "duration": 4,
+      "peakDbFS": 7.472283955707949,
+      "hottest100msRmsDbFS": -3.587508230801988,
+      "rmsDbFS": -15.108949302321175,
+      "integratedLufs": -12.96,
+      "truePeakDbTP": 4.46
+    },
+    "processed": {
+      "duration": 1.1,
+      "peakDbFS": -10.856073489786532,
+      "hottest100msRmsDbFS": -22.444593018251247,
+      "rmsDbFS": -30.645544737022547,
+      "integratedLufs": -32.7,
+      "truePeakDbTP": -10.84
+    },
+    "bytes": 16501
+  },
+  {
+    "key": "artillery",
+    "author": "qubodup",
+    "id": 161341,
+    "title": "Howitzer Artillery Gun Shot Sound Effect 03",
+    "recording": "Howitzer firing, excerpt from US Army video.",
+    "page": "https://freesound.org/people/qubodup/sounds/161341/",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "preview": "https://cdn.freesound.org/previews/161/161341_71257-lq.mp3",
+    "processedFile": "sfx-artillery.mp3",
+    "sourceSelection": {
+      "start": 0.22,
+      "duration": 1.25
+    },
+    "gainDb": -7.829707111782767,
+    "processing": "Selected one event; removed leading dead air where needed; mono downmix, 28/35 Hz high-pass, short click-prevention fades, static gain normalization; MP3 encoding. No synthesized audio layers.",
+    "raw": {
+      "duration": 1.5,
+      "peakDbFS": -4.0469309423698165,
+      "hottest100msRmsDbFS": -12.61658403904905,
+      "rmsDbFS": -18.63924800487039,
+      "integratedLufs": -20.44,
+      "truePeakDbTP": -7.05
+    },
+    "processed": {
+      "duration": 1.25,
+      "peakDbFS": -13.967781049426604,
+      "hottest100msRmsDbFS": -22.440200246052395,
+      "rmsDbFS": -27.755460969131704,
+      "integratedLufs": -30.01,
+      "truePeakDbTP": -13.97
+    },
+    "bytes": 18330
+  },
+  {
+    "key": "explosion-small",
+    "author": "qubodup",
+    "id": 67472,
+    "title": "M67 Fragmentation Grenade Explosion 3",
+    "recording": "M67 grenade detonation from US military video.",
+    "page": "https://freesound.org/people/qubodup/sounds/67472/",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "preview": "https://cdn.freesound.org/previews/67/67472_71257-lq.mp3",
+    "processedFile": "sfx-explosion-small.mp3",
+    "sourceSelection": {
+      "start": 0,
+      "duration": 1.6
+    },
+    "gainDb": -9.337677703727865,
+    "processing": "Selected one event; removed leading dead air where needed; mono downmix, 28/35 Hz high-pass, short click-prevention fades, static gain normalization; MP3 encoding. No synthesized audio layers.",
+    "raw": {
+      "duration": 2.198140589569161,
+      "peakDbFS": -3.279105097978223,
+      "hottest100msRmsDbFS": -12.662873505893142,
+      "rmsDbFS": -22.643746470456385,
+      "integratedLufs": -20.64,
+      "truePeakDbTP": -6.3
+    },
+    "processed": {
+      "duration": 1.6,
+      "peakDbFS": -13.489565391517749,
+      "hottest100msRmsDbFS": -22.431118563841558,
+      "rmsDbFS": -31.061072602286956,
+      "integratedLufs": -29.64,
+      "truePeakDbTP": -13.49
+    },
+    "bytes": 23450
+  },
+  {
+    "key": "explosion-medium",
+    "author": "qubodup",
+    "id": 855898,
+    "title": "Fire Explosion",
+    "recording": "EOD explosion; AFN Okinawa footage by Seaman Kelly Meyer, November 18, 2020.",
+    "page": "https://freesound.org/people/qubodup/sounds/855898/",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "preview": "https://cdn.freesound.org/previews/855/855898_71257-lq.mp3",
+    "processedFile": "sfx-explosion-medium.mp3",
+    "sourceSelection": {
+      "start": 0,
+      "duration": 1.23
+    },
+    "gainDb": -11.983153069054884,
+    "processing": "Selected one event; removed leading dead air where needed; mono downmix, 28/35 Hz high-pass, short click-prevention fades, static gain normalization; MP3 encoding. No synthesized audio layers.",
+    "raw": {
+      "duration": 1.2302947845804988,
+      "peakDbFS": 0.5134692464309066,
+      "hottest100msRmsDbFS": -9.975561487000068,
+      "rmsDbFS": -17.735632875222397,
+      "integratedLufs": -16.99,
+      "truePeakDbTP": -0.28
+    },
+    "processed": {
+      "duration": 1.23,
+      "peakDbFS": -11.64750784188608,
+      "hottest100msRmsDbFS": -22.43070382640493,
+      "rmsDbFS": -30.188179565387912,
+      "integratedLufs": -29.77,
+      "truePeakDbTP": -11.65
+    },
+    "bytes": 18330
+  },
+  {
+    "key": "explosion-big",
+    "author": "qubodup",
+    "id": 855798,
+    "title": "EOD Explosion",
+    "recording": "EOD detonation; US Army SETAF Africa Justified Accord 2026 footage.",
+    "page": "https://freesound.org/people/qubodup/sounds/855798/",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "preview": "https://cdn.freesound.org/previews/855/855798_71257-lq.mp3",
+    "processedFile": "sfx-explosion-big.mp3",
+    "sourceSelection": {
+      "start": 0,
+      "duration": 1.7
+    },
+    "gainDb": -12.79636538890571,
+    "processing": "Selected one event; removed leading dead air where needed; mono downmix, 28/35 Hz high-pass, short click-prevention fades, static gain normalization; MP3 encoding. No synthesized audio layers.",
+    "raw": {
+      "duration": 1.7088208616780045,
+      "peakDbFS": -0.23973617352135718,
+      "hottest100msRmsDbFS": -9.170165843930464,
+      "rmsDbFS": -15.6525664598303,
+      "integratedLufs": -13.93,
+      "truePeakDbTP": 0.19
+    },
+    "processed": {
+      "duration": 1.7,
+      "peakDbFS": -12.945951086033197,
+      "hottest100msRmsDbFS": -22.41483563529384,
+      "rmsDbFS": -28.88185889786525,
+      "integratedLufs": -27.2,
+      "truePeakDbTP": -12.97
+    },
+    "bytes": 24913
+  },
+  {
+    "key": "flare",
+    "author": "kyles",
+    "id": 450837,
+    "title": "flare fire real dull crack slap.wav",
+    "recording": "Real flare firing, Nunavik field recording.",
+    "page": "https://freesound.org/people/kyles/sounds/450837/",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "preview": "https://cdn.freesound.org/previews/450/450837_612689-lq.mp3",
+    "processedFile": "sfx-flare.mp3",
+    "sourceSelection": {
+      "start": 0.043,
+      "duration": 0.75
+    },
+    "gainDb": -7,
+    "processing": "Selected one event; removed leading dead air where needed; mono downmix, 28/35 Hz high-pass, short click-prevention fades, static gain normalization; MP3 encoding. No synthesized audio layers.",
+    "raw": {
+      "duration": 1.5849206349206348,
+      "peakDbFS": -0.007667182762284608,
+      "hottest100msRmsDbFS": -17.044995197081057,
+      "rmsDbFS": -28.97032946158773,
+      "integratedLufs": -25.98,
+      "truePeakDbTP": 0.12
+    },
+    "processed": {
+      "duration": 0.75,
+      "peakDbFS": -7.272514749335448,
+      "hottest100msRmsDbFS": -24.532020541026686,
+      "rmsDbFS": -33.21464687300864,
+      "integratedLufs": -28.75,
+      "truePeakDbTP": -7.14
+    },
+    "bytes": 11381
+  },
+  {
+    "key": "jet",
+    "author": "Rudmer_Rotteveel",
+    "id": 343746,
+    "title": "2 Royal Dutch Airforce F-16 Fighting Falcons flyby",
+    "recording": "Royal Netherlands Air Force F16s recorded with Tascam DR05 at Leeuwarden air base.",
+    "page": "https://freesound.org/people/Rudmer_Rotteveel/sounds/343746/",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "preview": "https://cdn.freesound.org/previews/343/343746_4921277-lq.mp3",
+    "processedFile": "sfx-jet.mp3",
+    "sourceSelection": {
+      "start": 15.6,
+      "duration": 3.2
+    },
+    "gainDb": -14.641555536307884,
+    "processing": "Selected one event; removed leading dead air where needed; mono downmix, 28/35 Hz high-pass, short click-prevention fades, static gain normalization; MP3 encoding. No synthesized audio layers.",
+    "raw": {
+      "duration": 173.65820861678006,
+      "peakDbFS": 2.0725685803678884,
+      "hottest100msRmsDbFS": -7.307035257645915,
+      "rmsDbFS": -21.272191376558993,
+      "integratedLufs": -18.49,
+      "truePeakDbTP": -0.82
+    },
+    "processed": {
+      "duration": 3.2,
+      "peakDbFS": -13.509460500210979,
+      "hottest100msRmsDbFS": -22.44623962666825,
+      "rmsDbFS": -27.212535722944455,
+      "integratedLufs": -27.65,
+      "truePeakDbTP": -13.51
+    },
+    "bytes": 45758
+  },
+  {
+    "key": "radio",
+    "author": "ReadeOnly",
+    "id": 47646,
+    "title": "End radio transmission",
+    "recording": "Real toy walkie-talkie transmission-end squelch.",
+    "page": "https://freesound.org/people/ReadeOnly/sounds/47646/",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "preview": "https://cdn.freesound.org/previews/47/47646_545448-lq.mp3",
+    "processedFile": "sfx-radio.mp3",
+    "sourceSelection": {
+      "start": 0,
+      "duration": 0.365
+    },
+    "gainDb": -8.678401994330745,
+    "processing": "Selected one event; removed leading dead air where needed; mono downmix, 28/35 Hz high-pass, short click-prevention fades, static gain normalization; MP3 encoding. No synthesized audio layers.",
+    "raw": {
+      "duration": 0.36594104308390024,
+      "peakDbFS": -3.877995274720132,
+      "hottest100msRmsDbFS": -13.309641724560727,
+      "rmsDbFS": -18.12051092054227,
+      "integratedLufs": null,
+      "truePeakDbTP": -3.88
+    },
+    "processed": {
+      "duration": 0.3650113378684807,
+      "peakDbFS": -13.013489408769804,
+      "hottest100msRmsDbFS": -22.63794397203433,
+      "rmsDbFS": -27.43656687896153,
+      "integratedLufs": null,
+      "truePeakDbTP": -12.99
+    },
+    "bytes": 5895
+  },
+  {
+    "key": "machine-gun",
+    "author": "qubodup",
+    "id": 482122,
+    "title": "Clean Machine Gun Burst",
+    "recording": "Actual machine-gun burst extracted from US military video; one terminal shot selected.",
+    "page": "https://freesound.org/people/qubodup/sounds/482122/",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "preview": "https://cdn.freesound.org/previews/482/482122_71257-hq.mp3",
+    "processedFile": "sfx-machine-gun.mp3",
+    "sourceSelection": {"start": 1.333, "duration": 0.265},
+    "gainDb": -7.047893220818733,
+    "processing": "One terminal shot with natural tail; mono 44.1kHz, 35Hz high-pass, 0.5ms entrance and 18ms exit fades, static gain to preserve peak headroom, 128kbps MP3. No synthesis, pitch shift or time stretch.",
+    "raw": {"duration": 1.5981859410430839, "peakDbFS": 0.3856610053369911, "hottest100msRmsDbFS": -14.538461367337668, "rmsDbFS": -17.3765306326661},
+    "processed": {"duration": 0.26501133786848075, "peakDbFS": -7.826844837391462, "hottest100msRmsDbFS": -24.353290966807556, "rmsDbFS": -28.223606561756476, "integratedLufs": null, "truePeakDbTP": -7.7},
+    "bytes": 5477,
+    "verifiedAt": "2026-11-07"
+  },
+  {
+    "key": "machine-gun-rapid",
+    "author": "qubodup",
+    "id": 482122,
+    "title": "Clean Machine Gun Burst",
+    "recording": "Actual machine-gun burst extracted from US military video; one short alternate shot cycle selected, stopping before the next round.",
+    "page": "https://freesound.org/people/qubodup/sounds/482122/",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "preview": "https://cdn.freesound.org/previews/482/482122_71257-hq.mp3",
+    "processedFile": "sfx-machine-gun-rapid.mp3",
+    "sourceSelection": {"start": 0.459, "duration": 0.084},
+    "gainDb": -6.1239001895501515,
+    "processing": "One alternate single-shot cycle, excluding the next round; mono 44.1kHz, 35Hz high-pass, 0.5ms entrance and 9ms exit fades, static gain to preserve peak headroom, 128kbps MP3. No synthesis, pitch shift or time stretch.",
+    "raw": {"duration": 1.5981859410430839, "peakDbFS": 0.3856610053369911, "hottest100msRmsDbFS": -14.538461367337668, "rmsDbFS": -17.3765306326661},
+    "processed": {"duration": 0.08401360544217687, "peakDbFS": -8.23105236161004, "hottest100msRmsDbFS": -23.958991476169203, "rmsDbFS": -23.20248770464429, "integratedLufs": null, "truePeakDbTP": -7.3},
+    "bytes": 2551,
+    "verifiedAt": "2026-11-07"
+  },
+  {
+    "key": "sniper",
+    "author": "qubodup",
+    "id": 815476,
+    "title": "Sniper Shot Echoey",
+    "recording": "Outdoor sniper shot and echo from US-government 2025 International Sniper Competition Short; uploader identifies the rifle as likely M110 SASS.",
+    "page": "https://freesound.org/people/qubodup/sounds/815476/",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "preview": "https://cdn.freesound.org/previews/815/815476_71257-hq.mp3",
+    "processedFile": "sfx-sniper.mp3",
+    "sourceSelection": {"start": 0, "duration": 1.55},
+    "gainDb": -8.040588793531025,
+    "processing": "Whole recorded shot and outdoor echo; mono 44.1kHz, 35Hz high-pass, 0.5ms entrance and 30ms exit fades, static gain to preserve peak headroom, 128kbps MP3. No synthesis, pitch shift or time stretch.",
+    "raw": {"duration": 1.5504308390022676, "peakDbFS": 0.025555308315097294, "hottest100msRmsDbFS": -14.802234848366789, "rmsDbFS": -21.14651674313563},
+    "processed": {"duration": 1.55, "peakDbFS": -7.880650237034594, "hottest100msRmsDbFS": -23.327622773093907, "rmsDbFS": -29.64162215638874, "integratedLufs": -27.2, "truePeakDbTP": -7.7},
+    "bytes": 25957,
+    "verifiedAt": "2026-11-07"
+  }
+]

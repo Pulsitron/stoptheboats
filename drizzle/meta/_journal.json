@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1788165909674,
+      "tag": "0000_stormy_goliath",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1788173789961,
+      "tag": "0001_flashy_loki",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1794052492153,
+      "tag": "0002_loud_layla_miller",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1794052650150,
+      "tag": "0003_complete_toro",
+      "breakpoints": true
+    }
+  ]
+}

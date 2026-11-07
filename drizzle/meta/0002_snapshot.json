@@ -1,0 +1,151 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "4eda8e04-9f10-44d8-a16c-afae9c5f2808",
+  "prevId": "c69aa622-0523-462e-b072-8832e99b5b68",
+  "tables": {
+    "leaderboard_scores": {
+      "name": "leaderboard_scores",
+      "columns": {
+        "player_id": {
+          "name": "player_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "callsign": {
+          "name": "callsign",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "score": {
+          "name": "score",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "wave": {
+          "name": "wave",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "boats_stopped": {
+          "name": "boats_stopped",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "best_chain": {
+          "name": "best_chain",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "time_held": {
+          "name": "time_held",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "headshots": {
+          "name": "headshots",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "leaderboard_score_rank_idx": {
+          "name": "leaderboard_score_rank_idx",
+          "columns": [
+            "score",
+            "updated_at",
+            "player_id"
+          ],
+          "isUnique": false
+        },
+        "leaderboard_boats_rank_idx": {
+          "name": "leaderboard_boats_rank_idx",
+          "columns": [
+            "boats_stopped",
+            "updated_at",
+            "player_id"
+          ],
+          "isUnique": false
+        },
+        "leaderboard_chain_rank_idx": {
+          "name": "leaderboard_chain_rank_idx",
+          "columns": [
+            "best_chain",
+            "updated_at",
+            "player_id"
+          ],
+          "isUnique": false
+        },
+        "leaderboard_time_rank_idx": {
+          "name": "leaderboard_time_rank_idx",
+          "columns": [
+            "time_held",
+            "updated_at",
+            "player_id"
+          ],
+          "isUnique": false
+        },
+        "leaderboard_headshots_rank_idx": {
+          "name": "leaderboard_headshots_rank_idx",
+          "columns": [
+            "headshots",
+            "updated_at",
+            "player_id"
+          ],
+          "isUnique": false
+        },
+        "leaderboard_callsign_unique_idx": {
+          "name": "leaderboard_callsign_unique_idx",
+          "columns": [
+            "callsign"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}
