@@ -147,6 +147,7 @@ body {
 
 .game-shell {
   width: 100vw;
+  height: 100vh;
   height: 100dvh;
   overflow: hidden;
   background: #02080c;
@@ -158,4 +159,19 @@ body {
   height: 100%;
   border: 0;
   background: #02080c;
+}
+
+/* The iframe owns playfield gestures; menus inside remain scrollable. */
+html, body {
+  overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+/* Bound the iframe itself: safe-area values inside nested frames may be zero. */
+.game-shell {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  box-sizing: border-box;
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
 }
